@@ -1,0 +1,107 @@
+@startuml
+
+title Caso 07 - Visualizar Tabela Financeira
+
+actor Secretaria as "Secretária"
+
+participant ":TelaFinanceira" as TF <<boundary>>
+participant ":FinanceiroController" as FC <<controller>>
+participant ":RegistroFinanceiro" as RF <<entity>>
+participant ":Aluno" as A <<entity>>
+participant ":Pagamento" as P <<entity>>
+
+Secretaria -> TF: acessarTelaFinanceira()
+activate TF
+
+TF -> FC: carregarDadosFinanceiros()
+activate FC
+
+loop para cada registro
+    FC -> RF: getValorPago()
+    activate RF
+    RF --> FC: valorPago
+    deactivate RF
+    
+    FC -> RF: getValorDevido()
+    activate RF
+    RF --> FC: valorDevido
+    deactivate RF
+    
+    FC -> RF: getStatus()
+    activate RF
+    RF --> FC: status
+    deactivate RF
+    
+    FC -> A: getNome()
+    activate A
+    A --> FC: nome
+    deactivate A
+end
+
+FC --> TF: dadosFinanceiros
+deactivate FC
+
+TF -> TF: exibirTabelaFinanceira()
+
+TF -> FC: filtrarPagamentosRealizados()
+activate FC
+
+loop para cada pagamento realizado
+    FC -> P: getValor()
+    activate P
+    P --> FC: valor
+    deactivate P
+    
+    FC -> P: getStatus()
+    activate P
+    P --> FC: status
+    deactivate P
+end
+
+FC --> TF: pagamentosRealizados
+deactivate FC
+
+TF -> TF: exibirPagamentosRealizados()
+
+TF -> FC: filtrarPagamentosPendentes()
+activate FC
+
+FC -> RF: calcularSaldo()
+activate RF
+RF --> FC: saldo
+deactivate RF
+
+FC --> TF: pagamentosPendentes
+deactivate FC
+
+TF -> TF: exibirPagamentosPendentes()
+
+TF --> Secretaria: tabelaExibida
+deactivate TF
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
+' ============================================
+'
+' GRASP Controller:
+' - FinanceiroController coordena o carregamento e
+'   filtragem dos dados financeiros.
+'
+' Information Expert (IE):
+' - RegistroFinanceiro conhece valores pagos/devidos e
+'   sabe calcular o saldo.
+' - Pagamento conhece seu valor e status.
+' - Aluno fornece seus dados para identificação.
+'
+' Low Coupling:
+' - TelaFinanceira não manipula entidades diretamente,
+'   delegando ao controller.
+'
+' High Cohesion:
+' - FinanceiroController foca em operações financeiras.
+' - RegistroFinanceiro centraliza cálculos de saldo.
+'
+' ATORES:
+' - Secretária: Visualiza a situação financeira dos alunos

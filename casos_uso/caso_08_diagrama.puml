@@ -1,0 +1,15 @@
+@startuml
+left to right direction
+
+actor Secretaria as "Secretária"
+
+usecase "Atualizar Pagamento" as UC8
+usecase "Selecionar Aluno" as UC8a
+usecase "Registrar Pagamento" as UC8b
+
+UC8 ..> UC8a : <<include>>
+UC8 ..> UC8b : <<include>>
+
+Secretaria --> UC8
+
+@enduml

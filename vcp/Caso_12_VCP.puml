@@ -1,0 +1,101 @@
+@startuml
+left to right direction
+
+class TelaSolicitacoes <<boundary>> {
+    +exibirPontosDisponiveis()
+    +obterPontoSelecionado()
+    +obterJustificativa()
+    +exibirConfirmacao()
+}
+
+class TelaAnaliseSolicitacao <<boundary>> {
+    +exibirListaSolicitacoes()
+    +exibirDetalhesSolicitacao()
+    +obterDecisao()
+}
+
+class ServicoNotificacao <<boundary>> {
+    +notificar(destinatario, mensagem)
+}
+
+class SolicitacaoController <<controller>> {
+    +carregarPontosDisponiveis()
+    +criarSolicitacao(aluno, novoPonto, justificativa)
+    +notificarMotorista(solicitacao)
+    +carregarSolicitacoesPendentes()
+    +processarDecisao(solicitacao, decisao)
+    +notificarAluno(solicitacao, decisao)
+}
+
+class Solicitacao <<entity>> {
+    -pontoAtual: PontoEmbarque
+    -pontoDesejado: PontoEmbarque
+    -justificativa: String
+    -status: String
+    -dataSolicitacao: DateTime
+    +aprovar()
+    +rejeitar()
+    +getStatus()
+}
+
+class Aluno <<entity>> {
+    -nome: String
+    -email: String
+    -pontoEmbarque: PontoEmbarque
+    +getNome()
+    +getPontoEmbarque()
+    +setPontoEmbarque(ponto)
+    +receberNotificacao(mensagem)
+}
+
+class Motorista <<entity>> {
+    -nome: String
+    -email: String
+    +getNome()
+    +receberNotificacao(mensagem)
+}
+
+class PontoEmbarque <<entity>> {
+    -nome: String
+    -referencia: String
+    -ordem: Integer
+    +getNome()
+}
+
+TelaSolicitacoes --> SolicitacaoController
+TelaAnaliseSolicitacao --> SolicitacaoController
+SolicitacaoController --> Solicitacao
+SolicitacaoController --> Aluno
+SolicitacaoController --> Motorista
+SolicitacaoController --> ServicoNotificacao
+Solicitacao --> Aluno
+Solicitacao --> PontoEmbarque
+ServicoNotificacao --> Aluno
+ServicoNotificacao --> Motorista
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES APLICADOS
+' ============================================
+'
+' PADRÕES DE ANÁLISE:
+' - BCE (Boundary-Controller-Entity): Separação entre
+'   interfaces (TelaSolicitacoes, TelaAnaliseSolicitacao),
+'   lógica (SolicitacaoController) e dados (Solicitacao,
+'   Aluno, Motorista, PontoEmbarque).
+' - GRASP Controller: SolicitacaoController coordena todo
+'   o fluxo de criação, análise e notificação.
+' - Information Expert: Solicitacao gerencia seu próprio
+'   status e transições (aprovar/rejeitar).
+'
+' PADRÕES DE PROJETO:
+' - Observer: Aplicado através do ServicoNotificacao para
+'   notificar motorista sobre novas solicitações e aluno
+'   sobre a decisão tomada.
+'
+' JUSTIFICATIVA:
+' O Observer é adequado pois há dois momentos de notificação:
+' quando o aluno cria a solicitação (notifica motorista) e
+' quando o motorista decide (notifica aluno). O serviço
+' centraliza e desacopla a lógica de notificação.

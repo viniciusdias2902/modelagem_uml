@@ -1,0 +1,12 @@
+@startuml
+left to right direction
+
+actor Administrador
+actor Aluno
+
+usecase "Cadastrar Usuário" as UC1
+
+Administrador --> UC1
+Aluno --> UC1
+
+@enduml

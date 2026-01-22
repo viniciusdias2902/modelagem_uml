@@ -1,0 +1,13 @@
+@startuml
+left to right direction
+
+actor Secretaria as "Secretária"
+
+usecase "Exportar Dados Financeiros" as UC10
+usecase "Gerar Planilha" as UC10a
+
+UC10 ..> UC10a : <<include>>
+
+Secretaria --> UC10
+
+@enduml

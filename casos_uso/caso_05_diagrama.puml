@@ -1,0 +1,17 @@
+@startuml
+left to right direction
+
+actor Motorista
+actor Aluno
+
+usecase "Atualizar Ponto Atual" as UC5
+usecase "Informar Próximo Ponto" as UC5a
+usecase "Calcular Distância" as UC5b
+
+UC5 ..> UC5a : <<include>>
+UC5 ..> UC5b : <<include>>
+
+Motorista --> UC5
+UC5b --> Aluno
+
+@enduml

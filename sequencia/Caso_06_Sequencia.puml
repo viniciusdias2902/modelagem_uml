@@ -1,0 +1,99 @@
+@startuml
+
+title Caso 06 - Visualizar Rota
+
+actor Aluno
+
+participant ":TelaVisualizacaoRota" as TVR <<boundary>>
+participant ":VisualizacaoRotaController" as VRC <<controller>>
+participant ":Rota" as R <<entity>>
+participant ":PontoEmbarque" as PE <<entity>>
+participant ":Aluno" as A <<entity>>
+
+Aluno -> TVR: acessarTelaVisualizacaoRota()
+activate TVR
+
+TVR -> VRC: carregarRota()
+activate VRC
+
+VRC -> R: getPontos()
+activate R
+R --> VRC: listaPontos
+deactivate R
+
+VRC -> R: getPontoAtual()
+activate R
+R --> VRC: pontoAtual
+deactivate R
+
+VRC --> TVR: rota
+deactivate VRC
+
+TVR -> VRC: carregarPontos()
+activate VRC
+
+loop para cada ponto
+    VRC -> PE: getNome()
+    activate PE
+    PE --> VRC: nome
+    deactivate PE
+    
+    VRC -> PE: getReferencia()
+    activate PE
+    PE --> VRC: referencia
+    deactivate PE
+    
+    VRC -> PE: getOrdem()
+    activate PE
+    PE --> VRC: ordem
+    deactivate PE
+end
+
+VRC --> TVR: pontos
+deactivate VRC
+
+TVR -> TVR: exibirRota()
+TVR -> TVR: exibirListaPontos()
+
+TVR -> VRC: identificarPontoAluno(aluno)
+activate VRC
+
+VRC -> A: getPontoEmbarque()
+activate A
+A --> VRC: pontoEmbarque
+deactivate A
+
+VRC --> TVR: pontoAluno
+deactivate VRC
+
+TVR -> TVR: destacarPontoAluno()
+
+TVR --> Aluno: rotaExibida
+deactivate TVR
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
+' ============================================
+'
+' GRASP Controller:
+' - VisualizacaoRotaController coordena o carregamento
+'   da rota, pontos e identificação do ponto do aluno.
+'
+' Information Expert (IE):
+' - Rota conhece sua lista de pontos e ponto atual.
+' - PontoEmbarque conhece seus próprios dados (nome, referência, ordem).
+' - Aluno conhece seu ponto de embarque.
+'
+' Low Coupling:
+' - TelaVisualizacaoRota não acessa entidades diretamente,
+'   toda comunicação passa pelo controller.
+'
+' High Cohesion:
+' - VisualizacaoRotaController foca apenas em operações
+'   de leitura e organização de dados da rota.
+' - Não há lógica de negócio complexa, apenas consulta.
+'
+' ATORES:
+' - Aluno: Visualiza a rota e identifica seu ponto de embarque

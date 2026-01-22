@@ -1,0 +1,15 @@
+@startuml
+left to right direction
+
+actor Motorista
+actor Aluno
+
+usecase "Iniciar Rota" as UC4
+usecase "Notificar Alunos" as UC4a
+
+UC4 ..> UC4a : <<include>>
+
+Motorista --> UC4
+UC4a --> Aluno
+
+@enduml

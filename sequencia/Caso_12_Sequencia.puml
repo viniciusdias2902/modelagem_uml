@@ -1,0 +1,176 @@
+@startuml
+
+title Caso 12 - Solicitar Troca de Ponto de Embarque
+
+actor Aluno
+actor Motorista
+
+participant ":TelaSolicitacoes" as TS <<boundary>>
+participant ":TelaAnaliseSolicitacao" as TAS <<boundary>>
+participant ":SolicitacaoController" as SC <<controller>>
+participant ":Aluno" as A <<entity>>
+participant ":Solicitacao" as S <<entity>>
+participant ":PontoEmbarque" as PE <<entity>>
+participant ":Motorista" as M <<entity>>
+participant ":ServicoNotificacao" as SN <<boundary>>
+
+== Fluxo do Aluno: Criar Solicitação ==
+
+Aluno -> TS: acessarTelaSolicitacoes()
+activate TS
+
+TS -> SC: carregarPontosDisponiveis()
+activate SC
+
+loop para cada ponto
+    SC -> PE: getNome()
+    activate PE
+    PE --> SC: nome
+    deactivate PE
+end
+
+SC --> TS: listaPontos
+deactivate SC
+
+TS -> TS: exibirPontosDisponiveis()
+
+Aluno -> TS: selecionarNovoPonto()
+TS -> TS: obterPontoSelecionado()
+
+Aluno -> TS: informarJustificativa()
+TS -> TS: obterJustificativa()
+
+Aluno -> TS: confirmarSolicitacao()
+
+TS -> SC: criarSolicitacao(aluno, novoPonto, justificativa)
+activate SC
+
+SC -> A: getPontoEmbarque()
+activate A
+A --> SC: pontoAtual
+deactivate A
+
+create S
+SC -> S: new(aluno, pontoAtual, novoPonto, justificativa)
+activate S
+S --> SC: solicitacao
+deactivate S
+
+SC -> SC: notificarMotorista(solicitacao)
+
+SC -> SN: notificar(motorista, mensagem)
+activate SN
+
+SN -> M: receberNotificacao(mensagem)
+activate M
+M --> SN: ok
+deactivate M
+
+SN --> SC: enviado
+deactivate SN
+
+SC --> TS: sucesso
+deactivate SC
+
+TS -> TS: exibirConfirmacao()
+
+TS --> Aluno: confirmacao
+deactivate TS
+
+== Fluxo do Motorista: Analisar Solicitação ==
+
+Motorista -> TAS: acessarTelaAnaliseSolicitacao()
+activate TAS
+
+TAS -> SC: carregarSolicitacoesPendentes()
+activate SC
+
+loop para cada solicitação
+    SC -> S: getStatus()
+    activate S
+    S --> SC: status
+    deactivate S
+end
+
+SC --> TAS: listaSolicitacoes
+deactivate SC
+
+TAS -> TAS: exibirListaSolicitacoes()
+
+Motorista -> TAS: selecionarSolicitacao()
+TAS -> TAS: exibirDetalhesSolicitacao()
+
+Motorista -> TAS: tomarDecisao()
+TAS -> TAS: obterDecisao()
+
+TAS -> SC: processarDecisao(solicitacao, decisao)
+activate SC
+
+alt decisao == "aprovar"
+    SC -> S: aprovar()
+    activate S
+    S --> SC: ok
+    deactivate S
+    
+    SC -> A: setPontoEmbarque(novoPonto)
+    activate A
+    A --> SC: ok
+    deactivate A
+else decisao == "rejeitar"
+    SC -> S: rejeitar()
+    activate S
+    S --> SC: ok
+    deactivate S
+end
+
+SC -> SC: notificarAluno(solicitacao, decisao)
+
+SC -> SN: notificar(aluno, mensagem)
+activate SN
+
+SN -> A: receberNotificacao(mensagem)
+activate A
+A --> SN: ok
+deactivate A
+
+SN --> SC: enviado
+deactivate SN
+
+SC --> TAS: sucesso
+deactivate SC
+
+TAS --> Motorista: confirmacao
+deactivate TAS
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
+' ============================================
+'
+' GRASP Controller:
+' - SolicitacaoController coordena todo o fluxo:
+'   criação da solicitação, notificação do motorista,
+'   processamento da decisão e notificação do aluno.
+'
+' Observer (OBS):
+' - O padrão é aplicado em dois momentos:
+'   1. Quando a solicitação é criada, o motorista é notificado.
+'   2. Quando a decisão é tomada, o aluno é notificado.
+' - ServicoNotificacao centraliza e desacopla a notificação.
+'
+' Information Expert (IE):
+' - Solicitacao gerencia seu status e transições (aprovar/rejeitar).
+' - Aluno conhece e atualiza seu ponto de embarque.
+'
+' Low Coupling:
+' - As telas não conhecem detalhes das entidades.
+' - Controller usa ServicoNotificacao sem conhecer implementação.
+'
+' High Cohesion:
+' - SolicitacaoController foca apenas em solicitações.
+' - ServicoNotificacao foca apenas em enviar notificações.
+'
+' ATORES:
+' - Aluno: Solicita troca de ponto de embarque
+' - Motorista: Analisa e decide sobre a solicitação

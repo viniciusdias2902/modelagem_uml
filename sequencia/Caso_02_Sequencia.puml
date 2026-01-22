@@ -1,0 +1,73 @@
+@startuml
+
+title Caso 02 - Realizar Login
+
+actor Aluno
+actor Motorista
+actor Secretaria as "Secretária"
+
+participant ":TelaLogin" as TL <<boundary>>
+participant ":AutenticacaoController" as AC <<controller>>
+participant ":Usuario" as U <<entity>>
+participant ":Sessao" as S <<entity>>
+
+Aluno -> TL: acessarTelaLogin()
+activate TL
+
+TL -> TL: exibirFormulario()
+TL -> TL: obterCredenciais()
+
+TL -> AC: autenticar(email, senha)
+activate AC
+
+AC -> U: getEmail()
+activate U
+U --> AC: email
+deactivate U
+
+AC -> U: getSenha()
+activate U
+U --> AC: senha
+deactivate U
+
+AC -> AC: validarCredenciais(email, senha)
+
+create S
+AC -> S: criarSessao(usuario)
+activate S
+S --> AC: sessao
+deactivate S
+
+AC --> TL: usuario
+deactivate AC
+
+TL -> TL: redirecionarTelaInicial(perfil)
+
+TL --> Aluno: telaInicial
+deactivate TL
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
+' ============================================
+'
+' GRASP Controller:
+' - AutenticacaoController recebe a requisição de login
+'   e coordena a validação e criação de sessão.
+'
+' Information Expert (IE):
+' - Usuario fornece suas próprias credenciais para validação.
+' - Sessao gerencia seu próprio estado de ativação.
+'
+' Low Coupling:
+' - TelaLogin não acessa entidades diretamente,
+'   toda comunicação passa pelo controller.
+'
+' High Cohesion:
+' - AutenticacaoController foca apenas em autenticação.
+' - Sessao foca apenas em gerenciar estado de login.
+'
+' ATORES:
+' - Aluno, Motorista, Secretária: Todos podem realizar login
+'   para acessar funcionalidades do seu perfil

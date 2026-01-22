@@ -1,0 +1,68 @@
+@startuml
+left to right direction
+
+class TelaVisualizacaoRota <<boundary>> {
+    +exibirRota()
+    +exibirListaPontos()
+    +destacarPontoAluno()
+}
+
+class VisualizacaoRotaController <<controller>> {
+    +carregarRota()
+    +carregarPontos()
+    +identificarPontoAluno(aluno)
+}
+
+class Rota <<entity>> {
+    -pontos: List<PontoEmbarque>
+    -pontoAtual: PontoEmbarque
+    +getPontos()
+    +getPontoAtual()
+}
+
+class PontoEmbarque <<entity>> {
+    -nome: String
+    -referencia: String
+    -ordem: Integer
+    +getNome()
+    +getReferencia()
+    +getOrdem()
+}
+
+class Aluno <<entity>> {
+    -nome: String
+    -email: String
+    -pontoEmbarque: PontoEmbarque
+    +getNome()
+    +getPontoEmbarque()
+}
+
+TelaVisualizacaoRota --> VisualizacaoRotaController
+VisualizacaoRotaController --> Rota
+VisualizacaoRotaController --> Aluno
+Rota --> PontoEmbarque
+Aluno --> PontoEmbarque
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES APLICADOS
+' ============================================
+'
+' PADRÕES DE ANÁLISE:
+' - BCE (Boundary-Controller-Entity): Separação entre
+'   interface (TelaVisualizacaoRota), lógica
+'   (VisualizacaoRotaController) e dados (Rota, PontoEmbarque, Aluno).
+' - GRASP Controller: VisualizacaoRotaController coordena
+'   o carregamento e organização dos dados para exibição.
+' - Information Expert: Rota conhece seus pontos ordenados,
+'   Aluno conhece seu ponto de embarque.
+'
+' PADRÕES DE PROJETO:
+' - Nenhum padrão de projeto foi necessário. Este caso de
+'   uso é uma consulta simples de dados existentes sem
+'   lógica complexa de criação ou comportamento variável.
+'
+' JUSTIFICATIVA:
+' O fluxo é de leitura e exibição de dados, não havendo
+' necessidade de padrões adicionais além do BCE básico.

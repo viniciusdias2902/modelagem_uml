@@ -1,0 +1,71 @@
+@startuml
+left to right direction
+
+class TelaGestaoPontos <<boundary>> {
+    +exibirFormulario()
+    +obterNome()
+    +obterReferencia()
+    +obterOrdem()
+    +exibirConfirmacao()
+}
+
+class PontoEmbarqueController <<controller>> {
+    +validarDados(nome, referencia, ordem)
+    +cadastrarPonto(nome, referencia, ordem)
+    +atualizarOrdemRota()
+}
+
+class Administrador <<entity>> {
+    -nome: String
+    -email: String
+    +getNome()
+    +getEmail()
+}
+
+class PontoEmbarque <<entity>> {
+    -nome: String
+    -referencia: String
+    -ordem: Integer
+    +getNome()
+    +getReferencia()
+    +getOrdem()
+    +setOrdem(ordem)
+}
+
+class Rota <<entity>> {
+    -pontos: List<PontoEmbarque>
+    +adicionarPonto(ponto)
+    +reordenarPontos()
+    +getPontos()
+}
+
+TelaGestaoPontos --> PontoEmbarqueController
+PontoEmbarqueController --> Administrador
+PontoEmbarqueController --> PontoEmbarque
+PontoEmbarqueController --> Rota
+Rota --> PontoEmbarque
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES APLICADOS
+' ============================================
+'
+' PADRÕES DE ANÁLISE:
+' - BCE (Boundary-Controller-Entity): Separação entre
+'   interface (TelaGestaoPontos), lógica
+'   (PontoEmbarqueController) e dados (Administrador, PontoEmbarque, Rota).
+' - GRASP Controller: PontoEmbarqueController coordena
+'   a validação e cadastro do ponto.
+' - Information Expert: Rota gerencia a lista de pontos
+'   e sabe como reordená-los quando um novo é adicionado.
+'
+' PADRÕES DE PROJETO:
+' - Nenhum padrão de projeto foi necessário. O cadastro
+'   é de um único tipo de entidade sem variações ou
+'   complexidade que justifique padrões adicionais.
+'
+' JUSTIFICATIVA:
+' O fluxo é simples e direto. A Rota assume a
+' responsabilidade de manter a ordenação dos pontos
+' seguindo o princípio Information Expert.

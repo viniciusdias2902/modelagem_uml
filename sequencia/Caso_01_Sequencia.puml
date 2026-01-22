@@ -1,0 +1,69 @@
+@startuml
+
+title Caso 01 - Cadastrar Usuário
+
+actor Administrador as Admin
+actor Aluno as AlunoAtor
+
+participant ":TelaCadastro" as TC <<boundary>>
+participant ":CadastroController" as CC <<controller>>
+participant ":UsuarioFactory" as UF <<controller>>
+participant ":Usuario" as U <<entity>>
+
+Admin -> TC: acessarTelaCadastro()
+activate TC
+
+TC -> TC: exibirFormulario()
+TC -> TC: obterDados()
+
+TC -> CC: cadastrarUsuario(dados)
+activate CC
+
+CC -> CC: validarDados(dados)
+
+CC -> UF: criarUsuario(tipo, dados)
+activate UF
+
+create U
+UF -> U: new(dados)
+activate U
+U --> UF: usuario
+deactivate U
+
+UF --> CC: usuario
+deactivate UF
+
+CC --> TC: sucesso
+deactivate CC
+
+TC -> TC: exibirMensagemSucesso()
+
+TC --> Admin: mensagem
+deactivate TC
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
+' ============================================
+'
+' GRASP Controller:
+' - CadastroController recebe a requisição da boundary
+'   e coordena todo o fluxo de cadastro.
+'
+' Factory (FAC):
+' - UsuarioFactory encapsula a criação do usuário,
+'   permitindo criar diferentes tipos (Aluno, Motorista,
+'   Secretaria, Administrador) sem expor a lógica ao controller.
+'
+' Low Coupling:
+' - A TelaCadastro não conhece as entidades diretamente,
+'   delegando ao controller.
+' - O controller não sabe como criar usuários, delegando à factory.
+'
+' High Cohesion:
+' - Cada participante tem uma única responsabilidade bem definida.
+'
+' ATORES:
+' - Administrador: Pode cadastrar qualquer tipo de usuário
+' - Aluno: Pode realizar seu próprio cadastro (auto-cadastro)

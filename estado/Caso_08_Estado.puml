@@ -1,0 +1,45 @@
+@startuml
+
+title Caso 08 - Diagrama de Estados: RegistroFinanceiro
+
+[*] --> Pendente
+
+Pendente : Nenhum pagamento realizado
+Pendente : valorPago = 0
+Pendente --> ParcialmentePago : adicionarPagamento() [valorPago < valorDevido]
+Pendente --> Quitado : adicionarPagamento() [valorPago >= valorDevido]
+
+ParcialmentePago : Pagamento parcial efetuado
+ParcialmentePago : valorPago < valorDevido
+ParcialmentePago --> ParcialmentePago : adicionarPagamento() [valorPago < valorDevido]
+ParcialmentePago --> Quitado : adicionarPagamento() [valorPago >= valorDevido]
+
+Quitado : Pagamento completo
+Quitado : valorPago >= valorDevido
+Quitado --> [*]
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DO DIAGRAMA DE ESTADOS
+' ============================================
+'
+' POR QUE O DIAGRAMA É NECESSÁRIO:
+' - A entidade RegistroFinanceiro possui ciclo de vida
+'   determinado pelo saldo entre valores pagos e devidos
+' - O estado financeiro determina ações administrativas
+' - A secretária precisa visualizar o status de cada aluno
+' - O sistema deve calcular automaticamente as transições
+'
+' ESTADOS IDENTIFICADOS:
+' - Pendente: Aluno não realizou nenhum pagamento
+' - ParcialmentePago: Pagamentos parciais foram feitos
+' - Quitado: Valor pago cobre ou excede o valor devido
+'
+' PADRÕES DE PROJETO APLICADOS:
+' - Nenhum padrão de projeto específico foi necessário.
+'   As transições são determinadas por cálculos simples
+'   baseados nos valores pagos e devidos.
+' - O princípio Information Expert (IE) é aplicado:
+'   RegistroFinanceiro calcula seu próprio estado
+'   através do método calcularSaldo() e atualizarStatus().

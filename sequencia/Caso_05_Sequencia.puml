@@ -1,0 +1,96 @@
+@startuml
+
+title Caso 05 - Atualizar Ponto Atual
+
+actor Motorista
+
+participant ":TelaControleRota" as TCR <<boundary>>
+participant ":PontoController" as PC <<controller>>
+participant ":Rota" as R <<entity>>
+participant ":PontoEmbarque" as PE <<entity>>
+participant ":Aluno" as A <<entity>>
+
+Motorista -> TCR: acessarTelaControleRota()
+activate TCR
+
+TCR -> PC: carregarPontosRota()
+activate PC
+
+PC -> R: getPontoAtual()
+activate R
+R --> PC: pontoAtual
+deactivate R
+
+PC --> TCR: listaPontos
+deactivate PC
+
+TCR -> TCR: exibirListaPontos()
+
+Motorista -> TCR: selecionarPonto()
+TCR -> TCR: obterPontoSelecionado()
+
+TCR -> PC: atualizarPontoAtual(ponto)
+activate PC
+
+PC -> R: setPontoAtual(ponto)
+activate R
+R --> PC: ok
+deactivate R
+
+PC -> PC: calcularProximoPonto()
+
+PC -> PE: getOrdem()
+activate PE
+PE --> PC: ordem
+deactivate PE
+
+PC -> R: getProximoPonto()
+activate R
+R --> PC: proximoPonto
+deactivate R
+
+PC -> PC: disponibilizarPosicao()
+
+loop para cada aluno inscrito
+    PC -> A: receberAtualizacao(pontoAtual)
+    activate A
+    A --> PC: ok
+    deactivate A
+end
+
+PC --> TCR: pontoAtualizado
+deactivate PC
+
+TCR -> TCR: exibirPontoAtual()
+TCR -> TCR: exibirProximoPonto()
+
+TCR --> Motorista: atualizacao
+deactivate TCR
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
+' ============================================
+'
+' GRASP Controller:
+' - PontoController coordena a atualização do ponto atual
+'   e o cálculo do próximo ponto na rota.
+'
+' Observer (OBS):
+' - O padrão é evidenciado no loop de atualização.
+' - Quando o ponto atual muda, todos os alunos inscritos
+'   recebem a atualização da posição do transporte.
+'
+' Information Expert (IE):
+' - Rota conhece seus pontos e gerencia ponto atual/próximo.
+' - PontoEmbarque conhece sua ordem na rota.
+'
+' Low Coupling:
+' - TelaControleRota não manipula entidades diretamente.
+'
+' High Cohesion:
+' - PontoController foca na gestão de pontos da rota.
+'
+' ATORES:
+' - Motorista: Atualiza o ponto atual durante a viagem

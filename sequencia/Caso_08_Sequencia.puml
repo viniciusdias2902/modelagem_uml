@@ -1,0 +1,101 @@
+@startuml
+
+title Caso 08 - Atualizar Pagamento
+
+actor Secretaria as "Secretária"
+
+participant ":TelaFinanceira" as TF <<boundary>>
+participant ":PagamentoController" as PC <<controller>>
+participant ":Aluno" as A <<entity>>
+participant ":Pagamento" as P <<entity>>
+participant ":RegistroFinanceiro" as RF <<entity>>
+
+Secretaria -> TF: acessarTelaFinanceira()
+activate TF
+
+TF -> PC: carregarAlunos()
+activate PC
+
+loop para cada aluno
+    PC -> A: getNome()
+    activate A
+    A --> PC: nome
+    deactivate A
+end
+
+PC --> TF: listaAlunos
+deactivate PC
+
+TF -> TF: exibirListaAlunos()
+
+Secretaria -> TF: selecionarAluno()
+TF -> TF: obterAlunoSelecionado()
+
+Secretaria -> TF: informarPagamento()
+TF -> TF: obterValorPagamento()
+TF -> TF: obterDataPagamento()
+
+TF -> PC: registrarPagamento(aluno, valor, data)
+activate PC
+
+create P
+PC -> P: new(valor, data)
+activate P
+P --> PC: pagamento
+deactivate P
+
+PC -> A: getRegistroFinanceiro()
+activate A
+A --> PC: registroFinanceiro
+deactivate A
+
+PC -> RF: adicionarPagamento(pagamento)
+activate RF
+RF --> PC: ok
+deactivate RF
+
+PC -> PC: atualizarSaldo(aluno)
+
+PC -> RF: calcularSaldo()
+activate RF
+RF --> PC: saldo
+deactivate RF
+
+PC -> RF: atualizarStatus()
+activate RF
+RF --> PC: ok
+deactivate RF
+
+PC --> TF: sucesso
+deactivate PC
+
+TF -> TF: exibirConfirmacao()
+
+TF --> Secretaria: confirmacao
+deactivate TF
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
+' ============================================
+'
+' GRASP Controller:
+' - PagamentoController coordena o registro do pagamento
+'   e a atualização do saldo do aluno.
+'
+' Information Expert (IE):
+' - RegistroFinanceiro sabe adicionar pagamentos, calcular
+'   saldo e atualizar seu próprio status.
+' - Aluno conhece seu registro financeiro.
+'
+' Low Coupling:
+' - TelaFinanceira não conhece a lógica de cálculo de saldo,
+'   delegando ao controller e às entidades.
+'
+' High Cohesion:
+' - PagamentoController foca em operações de pagamento.
+' - RegistroFinanceiro centraliza a lógica financeira.
+'
+' ATORES:
+' - Secretária: Registra pagamentos realizados pelos alunos

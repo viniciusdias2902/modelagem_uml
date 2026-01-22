@@ -1,0 +1,15 @@
+@startuml
+left to right direction
+
+actor Administrador
+
+usecase "Cadastrar Ponto de Embarque" as UC11
+usecase "Informar Nome e Referência" as UC11a
+usecase "Definir Ordem na Rota" as UC11b
+
+UC11 ..> UC11a : <<include>>
+UC11 ..> UC11b : <<include>>
+
+Administrador --> UC11
+
+@enduml

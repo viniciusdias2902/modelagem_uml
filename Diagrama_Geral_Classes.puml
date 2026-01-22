@@ -1,0 +1,235 @@
+@startuml
+
+title Diagrama Geral de Classes - Sistema Unibus
+
+' ============================================
+' CONFIGURAÇÕES
+' ============================================
+skinparam classAttributeIconSize 0
+left to right direction
+
+' ============================================
+' PADRÃO FACTORY - CRIAÇÃO DE USUÁRIOS
+' ============================================
+class UsuarioFactory {
+    +criarUsuario(tipo, dados): Usuario
+}
+
+' ============================================
+' HIERARQUIA DE USUÁRIOS
+' ============================================
+abstract class Usuario {
+    -id: Integer
+    -nome: String
+    -email: String
+    -senha: String
+    +getNome(): String
+    +getEmail(): String
+    +autenticar(senha): Boolean
+}
+
+class Administrador {
+    +cadastrarUsuario(dados)
+    +cadastrarPontoEmbarque(dados)
+}
+
+class Aluno {
+    -dispositivo: String
+    +getPontoEmbarque(): PontoEmbarque
+    +setPontoEmbarque(ponto)
+    +getRegistroFinanceiro(): RegistroFinanceiro
+    +receberNotificacao(mensagem)
+    +responderEnquete(data, opcao)
+}
+
+class Motorista {
+    +iniciarRota()
+    +atualizarPontoAtual(ponto)
+    +analisarSolicitacao(solicitacao)
+    +receberNotificacao(mensagem)
+}
+
+class Secretaria {
+    +registrarPagamento(aluno, valor)
+    +gerarComprovante(pagamento, formato)
+    +exportarDadosFinanceiros(periodo)
+}
+
+' ============================================
+' SESSÃO E AUTENTICAÇÃO
+' ============================================
+class Sessao {
+    -dataLogin: DateTime
+    -ativa: Boolean
+    +getUsuario(): Usuario
+    +isAtiva(): Boolean
+    +encerrar()
+}
+
+' ============================================
+' ROTA E PONTOS DE EMBARQUE
+' ============================================
+class Rota {
+    -data: Date
+    -status: String
+    -horaInicio: DateTime
+    -pontoAtual: PontoEmbarque
+    -proximoPonto: PontoEmbarque
+    +iniciar()
+    +finalizar()
+    +getStatus(): String
+    +getPontos(): List
+    +getAlunos(): List
+    +setPontoAtual(ponto)
+    +getProximoPonto(): PontoEmbarque
+}
+
+class PontoEmbarque {
+    -nome: String
+    -referencia: String
+    -ordem: Integer
+    +getNome(): String
+    +getReferencia(): String
+    +getOrdem(): Integer
+    +setOrdem(ordem)
+}
+
+' ============================================
+' ENQUETE E RESPOSTAS
+' ============================================
+class Enquete {
+    -data: Date
+    -ativa: Boolean
+    +getData(): Date
+    +isAtiva(): Boolean
+    +getRespostas(): List
+}
+
+class RespostaEnquete {
+    -data: Date
+    -opcaoTrajeto: String
+    +getData(): Date
+    +getOpcaoTrajeto(): String
+    +getAluno(): Aluno
+}
+
+' ============================================
+' FINANCEIRO
+' ============================================
+class RegistroFinanceiro {
+    -valorPago: Decimal
+    -valorDevido: Decimal
+    -status: String
+    +getValorPago(): Decimal
+    +getValorDevido(): Decimal
+    +getStatus(): String
+    +calcularSaldo(): Decimal
+    +adicionarPagamento(pagamento)
+    +atualizarStatus()
+}
+
+class Pagamento {
+    -valor: Decimal
+    -data: Date
+    -status: String
+    +getValor(): Decimal
+    +getData(): Date
+    +getStatus(): String
+    +getAluno(): Aluno
+}
+
+class Comprovante {
+    -dataEmissao: DateTime
+    -formato: String
+    +getConteudo(): String
+    +getPagamento(): Pagamento
+}
+
+' ============================================
+' PADRÃO STRATEGY - GERAÇÃO DE COMPROVANTE
+' ============================================
+interface GeradorComprovante {
+    +gerar(pagamento): Comprovante
+}
+
+class GeradorPDF {
+    +gerar(pagamento): Comprovante
+}
+
+class GeradorWord {
+    +gerar(pagamento): Comprovante
+}
+
+' ============================================
+' SOLICITAÇÃO DE TROCA DE PONTO
+' ============================================
+class Solicitacao {
+    -justificativa: String
+    -status: String
+    -dataSolicitacao: DateTime
+    +getStatus(): String
+    +getJustificativa(): String
+    +getPontoAtual(): PontoEmbarque
+    +getPontoDesejado(): PontoEmbarque
+    +aprovar()
+    +rejeitar()
+}
+
+' ============================================
+' RELACIONAMENTOS - GENERALIZAÇÃO
+' ============================================
+Usuario <|-- Administrador
+Usuario <|-- Aluno
+Usuario <|-- Motorista
+Usuario <|-- Secretaria
+
+' ============================================
+' RELACIONAMENTOS - FACTORY
+' ============================================
+UsuarioFactory ..> Usuario : <<creates>>
+
+' ============================================
+' RELACIONAMENTOS - STRATEGY
+' ============================================
+GeradorComprovante <|.. GeradorPDF
+GeradorComprovante <|.. GeradorWord
+
+' ============================================
+' RELACIONAMENTOS - SESSÃO
+' ============================================
+Sessao "0..*" -- "1" Usuario
+
+' ============================================
+' RELACIONAMENTOS - ROTA
+' ============================================
+Rota "1" *-- "2..*" PontoEmbarque : contém
+Rota "0..*" o-- "0..*" Aluno : inscritos
+
+' ============================================
+' RELACIONAMENTOS - ALUNO
+' ============================================
+Aluno "0..*" -- "1" PontoEmbarque : embarca em
+Aluno "1" *-- "1" RegistroFinanceiro
+Aluno "1" -- "0..*" RespostaEnquete : responde
+Aluno "1" -- "0..*" Solicitacao : solicita
+
+' ============================================
+' RELACIONAMENTOS - ENQUETE
+' ============================================
+Enquete "1" *-- "0..*" RespostaEnquete
+
+' ============================================
+' RELACIONAMENTOS - FINANCEIRO
+' ============================================
+RegistroFinanceiro "1" *-- "0..*" Pagamento
+Pagamento "1" -- "0..1" Comprovante : gera
+GeradorComprovante ..> Comprovante : <<creates>>
+
+' ============================================
+' RELACIONAMENTOS - SOLICITAÇÃO
+' ============================================
+Solicitacao "0..*" -- "1" PontoEmbarque : ponto atual
+Solicitacao "0..*" -- "1" PontoEmbarque : ponto desejado
+Motorista "1" -- "0..*" Solicitacao : analisa
+
+@enduml

@@ -1,0 +1,76 @@
+@startuml
+left to right direction
+
+class TelaControleRota <<boundary>> {
+    +exibirListaPontos()
+    +obterPontoSelecionado()
+    +exibirPontoAtual()
+    +exibirProximoPonto()
+}
+
+class PontoController <<controller>> {
+    +carregarPontosRota()
+    +atualizarPontoAtual(ponto)
+    +calcularProximoPonto()
+    +disponibilizarPosicao()
+}
+
+class Rota <<entity>> {
+    -pontoAtual: PontoEmbarque
+    -proximoPonto: PontoEmbarque
+    -status: String
+    +getPontoAtual()
+    +getProximoPonto()
+    +setPontoAtual(ponto)
+}
+
+class PontoEmbarque <<entity>> {
+    -nome: String
+    -referencia: String
+    -ordem: Integer
+    +getNome()
+    +getOrdem()
+}
+
+class Motorista <<entity>> {
+    -nome: String
+    -email: String
+    +getNome()
+}
+
+class Aluno <<entity>> {
+    -nome: String
+    -pontoEmbarque: PontoEmbarque
+    +getPontoEmbarque()
+    +receberAtualizacao(pontoAtual)
+}
+
+TelaControleRota --> PontoController
+PontoController --> Rota
+PontoController --> Motorista
+Rota --> PontoEmbarque
+Rota --> Aluno
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES APLICADOS
+' ============================================
+'
+' PADRÕES DE ANÁLISE:
+' - BCE (Boundary-Controller-Entity): Separação entre
+'   interface (TelaControleRota), lógica (PontoController)
+'   e dados (Rota, PontoEmbarque, Motorista, Aluno).
+' - GRASP Controller: PontoController coordena a atualização
+'   do ponto e cálculo do próximo.
+' - Information Expert: Rota conhece seus pontos e calcula
+'   qual é o próximo na sequência.
+'
+' PADRÕES DE PROJETO:
+' - Observer: Reutilizado do Caso 04 para notificar alunos
+'   sobre a atualização da posição do transporte.
+'
+' JUSTIFICATIVA:
+' O Observer continua adequado pois os alunos precisam ser
+' informados em tempo real sobre a posição do transporte,
+' permitindo que acompanhem quantos pontos faltam.

@@ -1,0 +1,73 @@
+@startuml
+left to right direction
+
+class TelaFinanceira <<boundary>> {
+    +exibirOpcaoExportar()
+    +obterPeriodo()
+    +disponibilizarDownload(arquivo)
+}
+
+class ExportacaoController <<controller>> {
+    +carregarDadosPeriodo(dataInicio, dataFim)
+    +gerarPlanilha(dados)
+    +exportar()
+}
+
+class GeradorPlanilha <<controller>> {
+    +criar(dados): Arquivo
+    +adicionarCabecalho()
+    +adicionarLinhas(registros)
+}
+
+class Secretaria <<entity>> {
+    -nome: String
+    -email: String
+    +getNome()
+    +getEmail()
+}
+
+class RegistroFinanceiro <<entity>> {
+    -valorPago: Decimal
+    -valorDevido: Decimal
+    -status: String
+    +getValorPago()
+    +getValorDevido()
+    +getStatus()
+}
+
+class Aluno <<entity>> {
+    -nome: String
+    -email: String
+    +getNome()
+}
+
+TelaFinanceira --> ExportacaoController
+ExportacaoController --> Secretaria
+ExportacaoController --> GeradorPlanilha
+ExportacaoController --> RegistroFinanceiro
+RegistroFinanceiro --> Aluno
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES APLICADOS
+' ============================================
+'
+' PADRÕES DE ANÁLISE:
+' - BCE (Boundary-Controller-Entity): Separação entre
+'   interface (TelaFinanceira), lógica (ExportacaoController,
+'   GeradorPlanilha) e dados (Secretaria, RegistroFinanceiro, Aluno).
+' - GRASP Controller: ExportacaoController coordena a
+'   coleta de dados e geração da planilha.
+' - Information Expert: RegistroFinanceiro fornece os
+'   dados financeiros de cada aluno.
+'
+' PADRÕES DE PROJETO:
+' - Nenhum padrão de projeto adicional foi necessário.
+'   A exportação é para um único formato (planilha),
+'   não havendo variação que justifique Strategy.
+'
+' JUSTIFICATIVA:
+' O fluxo é direto: filtrar dados por período e gerar
+' planilha. GeradorPlanilha encapsula a lógica de
+' criação do arquivo sem necessidade de abstração adicional.

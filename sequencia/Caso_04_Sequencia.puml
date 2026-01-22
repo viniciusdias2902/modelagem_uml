@@ -1,0 +1,93 @@
+@startuml
+
+title Caso 04 - Iniciar Rota
+
+actor Motorista
+
+participant ":TelaControleRota" as TCR <<boundary>>
+participant ":RotaController" as RC <<controller>>
+participant ":Rota" as R <<entity>>
+participant ":Aluno" as A <<entity>>
+participant ":ServicoNotificacao" as SN <<boundary>>
+
+Motorista -> TCR: acessarTelaControleRota()
+activate TCR
+
+TCR -> RC: carregarRota(data)
+activate RC
+
+RC -> R: getStatus()
+activate R
+R --> RC: status
+deactivate R
+
+RC --> TCR: rota
+deactivate RC
+
+TCR -> TCR: exibirRota()
+TCR -> TCR: exibirBotaoIniciar()
+
+Motorista -> TCR: clicarIniciarRota()
+
+TCR -> RC: iniciarRota()
+activate RC
+
+RC -> R: iniciar()
+activate R
+R --> RC: ok
+deactivate R
+
+RC -> R: getAlunos()
+activate R
+R --> RC: listaAlunos
+deactivate R
+
+RC -> RC: notificarAlunos()
+
+loop para cada aluno
+    RC -> SN: enviarNotificacao(aluno, mensagem)
+    activate SN
+    
+    SN -> A: receberNotificacao(mensagem)
+    activate A
+    A --> SN: ok
+    deactivate A
+    
+    SN --> RC: enviado
+    deactivate SN
+end
+
+RC --> TCR: sucesso
+deactivate RC
+
+TCR -> TCR: exibirConfirmacao()
+
+TCR --> Motorista: confirmacao
+deactivate TCR
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
+' ============================================
+'
+' GRASP Controller:
+' - RotaController coordena o início da rota e
+'   orquestra a notificação dos alunos.
+'
+' Observer (OBS):
+' - O padrão é evidenciado no loop de notificação.
+' - Quando a rota é iniciada, todos os alunos inscritos
+'   são notificados através do ServicoNotificacao.
+' - A Rota mantém a lista de alunos (observadores).
+'
+' Low Coupling:
+' - RotaController usa ServicoNotificacao para notificar,
+'   não conhecendo detalhes de como a notificação é feita.
+'
+' High Cohesion:
+' - ServicoNotificacao foca apenas em enviar notificações.
+' - Rota gerencia seu estado e lista de alunos.
+'
+' ATORES:
+' - Motorista: Inicia a rota para informar que a viagem começou

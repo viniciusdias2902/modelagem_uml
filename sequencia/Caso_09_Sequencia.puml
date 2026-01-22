@@ -1,0 +1,127 @@
+@startuml
+
+title Caso 09 - Gerar Comprovante
+
+actor Secretaria as "Secretária"
+
+participant ":TelaFinanceira" as TF <<boundary>>
+participant ":ComprovanteController" as CC <<controller>>
+participant ":Pagamento" as P <<entity>>
+participant ":Aluno" as A <<entity>>
+participant ":GeradorComprovante" as GC <<controller>>
+participant ":Comprovante" as C <<entity>>
+
+Secretaria -> TF: acessarTelaFinanceira()
+activate TF
+
+TF -> TF: exibirListaAlunos()
+
+Secretaria -> TF: selecionarAluno()
+TF -> TF: obterAlunoSelecionado()
+
+TF -> CC: carregarPagamentos(aluno)
+activate CC
+
+loop para cada pagamento
+    CC -> P: getValor()
+    activate P
+    P --> CC: valor
+    deactivate P
+    
+    CC -> P: getData()
+    activate P
+    P --> CC: data
+    deactivate P
+end
+
+CC --> TF: listaPagamentos
+deactivate CC
+
+TF -> TF: exibirPagamentos(aluno)
+
+Secretaria -> TF: selecionarPagamento()
+TF -> TF: obterPagamentoSelecionado()
+
+Secretaria -> TF: escolherFormato()
+TF -> TF: obterFormatoEscolhido()
+
+TF -> CC: gerarComprovante(pagamento, formato)
+activate CC
+
+CC -> CC: obterGeradorFormato(formato)
+
+CC -> P: getValor()
+activate P
+P --> CC: valor
+deactivate P
+
+CC -> P: getData()
+activate P
+P --> CC: data
+deactivate P
+
+CC -> P: getAluno()
+activate P
+P --> CC: aluno
+deactivate P
+
+CC -> A: getNome()
+activate A
+A --> CC: nome
+deactivate A
+
+CC -> GC: gerar(pagamento)
+activate GC
+
+create C
+GC -> C: new(pagamento, formato)
+activate C
+C --> GC: comprovante
+deactivate C
+
+GC -> C: getConteudo()
+activate C
+C --> GC: conteudo
+deactivate C
+
+GC --> CC: arquivo
+deactivate GC
+
+CC --> TF: arquivo
+deactivate CC
+
+TF -> TF: disponibilizarDownload(arquivo)
+
+TF --> Secretaria: downloadDisponivel
+deactivate TF
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
+' ============================================
+'
+' GRASP Controller:
+' - ComprovanteController coordena o carregamento de
+'   pagamentos e a geração do comprovante.
+'
+' Strategy (STR):
+' - O padrão é evidenciado na chamada obterGeradorFormato().
+' - GeradorComprovante é a interface que define o contrato.
+' - GeradorPDF ou GeradorWord são selecionados em runtime
+'   conforme o formato escolhido pelo usuário.
+' - Permite adicionar novos formatos sem modificar o controller.
+'
+' Information Expert (IE):
+' - Pagamento fornece seus dados (valor, data, aluno).
+' - Comprovante conhece seu próprio conteúdo.
+'
+' Low Coupling:
+' - ComprovanteController não conhece implementações específicas,
+'   trabalha apenas com a interface GeradorComprovante.
+'
+' High Cohesion:
+' - Cada gerador foca em um único formato de saída.
+'
+' ATORES:
+' - Secretária: Gera comprovantes de pagamento em PDF ou Word

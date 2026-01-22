@@ -1,0 +1,77 @@
+@startuml
+left to right direction
+
+class TelaFinanceira <<boundary>> {
+    +exibirTabelaFinanceira()
+    +exibirPagamentosRealizados()
+    +exibirPagamentosPendentes()
+}
+
+class FinanceiroController <<controller>> {
+    +carregarDadosFinanceiros()
+    +filtrarPagamentosRealizados()
+    +filtrarPagamentosPendentes()
+}
+
+class Secretaria <<entity>> {
+    -nome: String
+    -email: String
+    +getNome()
+    +getEmail()
+}
+
+class RegistroFinanceiro <<entity>> {
+    -valorPago: Decimal
+    -valorDevido: Decimal
+    -status: String
+    +getValorPago()
+    +getValorDevido()
+    +getStatus()
+    +calcularSaldo()
+}
+
+class Aluno <<entity>> {
+    -nome: String
+    -email: String
+    +getNome()
+    +getEmail()
+}
+
+class Pagamento <<entity>> {
+    -valor: Decimal
+    -data: Date
+    -status: String
+    +getValor()
+    +getData()
+    +getStatus()
+}
+
+TelaFinanceira --> FinanceiroController
+FinanceiroController --> Secretaria
+FinanceiroController --> RegistroFinanceiro
+RegistroFinanceiro --> Aluno
+RegistroFinanceiro --> Pagamento
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES APLICADOS
+' ============================================
+'
+' PADRÕES DE ANÁLISE:
+' - BCE (Boundary-Controller-Entity): Separação entre
+'   interface (TelaFinanceira), lógica (FinanceiroController)
+'   e dados (Secretaria, RegistroFinanceiro, Aluno, Pagamento).
+' - GRASP Controller: FinanceiroController coordena o
+'   carregamento e filtragem dos dados financeiros.
+' - Information Expert: RegistroFinanceiro calcula o saldo
+'   e status do aluno com base nos pagamentos.
+'
+' PADRÕES DE PROJETO:
+' - Nenhum padrão de projeto foi necessário. O caso de uso
+'   consiste em consulta e exibição de dados financeiros
+'   sem lógica complexa.
+'
+' JUSTIFICATIVA:
+' O fluxo é de leitura e apresentação de dados agregados.
+' A estrutura BCE organiza adequadamente as responsabilidades.

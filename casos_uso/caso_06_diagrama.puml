@@ -1,0 +1,15 @@
+@startuml
+left to right direction
+
+actor Aluno
+
+usecase "Visualizar Rota" as UC6
+usecase "Exibir Pontos de Embarque" as UC6a
+usecase "Exibir Ordem dos Pontos" as UC6b
+
+UC6 ..> UC6a : <<include>>
+UC6 ..> UC6b : <<include>>
+
+Aluno --> UC6
+
+@enduml

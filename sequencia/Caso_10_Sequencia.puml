@@ -1,0 +1,99 @@
+@startuml
+
+title Caso 10 - Exportar Dados Financeiros
+
+actor Secretaria as "Secretária"
+
+participant ":TelaFinanceira" as TF <<boundary>>
+participant ":ExportacaoController" as EC <<controller>>
+participant ":RegistroFinanceiro" as RF <<entity>>
+participant ":Aluno" as A <<entity>>
+participant ":GeradorPlanilha" as GP <<controller>>
+
+Secretaria -> TF: acessarTelaFinanceira()
+activate TF
+
+TF -> TF: exibirOpcaoExportar()
+
+Secretaria -> TF: selecionarExportar()
+
+Secretaria -> TF: informarPeriodo()
+TF -> TF: obterPeriodo()
+
+TF -> EC: carregarDadosPeriodo(dataInicio, dataFim)
+activate EC
+
+loop para cada registro no período
+    EC -> RF: getValorPago()
+    activate RF
+    RF --> EC: valorPago
+    deactivate RF
+    
+    EC -> RF: getValorDevido()
+    activate RF
+    RF --> EC: valorDevido
+    deactivate RF
+    
+    EC -> RF: getStatus()
+    activate RF
+    RF --> EC: status
+    deactivate RF
+    
+    EC -> A: getNome()
+    activate A
+    A --> EC: nome
+    deactivate A
+end
+
+EC --> TF: dadosFiltrados
+deactivate EC
+
+Secretaria -> TF: confirmarExportacao()
+
+TF -> EC: exportar()
+activate EC
+
+EC -> EC: gerarPlanilha(dados)
+
+EC -> GP: criar(dados)
+activate GP
+
+GP -> GP: adicionarCabecalho()
+GP -> GP: adicionarLinhas(registros)
+
+GP --> EC: arquivo
+deactivate GP
+
+EC --> TF: arquivo
+deactivate EC
+
+TF -> TF: disponibilizarDownload(arquivo)
+
+TF --> Secretaria: downloadDisponivel
+deactivate TF
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
+' ============================================
+'
+' GRASP Controller:
+' - ExportacaoController coordena a coleta de dados
+'   por período e a geração da planilha.
+'
+' Information Expert (IE):
+' - RegistroFinanceiro fornece valores pagos, devidos e status.
+' - Aluno fornece seu nome para identificação.
+' - GeradorPlanilha sabe como estruturar a planilha.
+'
+' Low Coupling:
+' - TelaFinanceira não conhece a lógica de geração de planilha.
+' - ExportacaoController delega a criação ao GeradorPlanilha.
+'
+' High Cohesion:
+' - ExportacaoController foca em coordenar a exportação.
+' - GeradorPlanilha foca exclusivamente na criação do arquivo.
+'
+' ATORES:
+' - Secretária: Exporta dados financeiros em formato de planilha

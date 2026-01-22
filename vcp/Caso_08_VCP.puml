@@ -1,0 +1,79 @@
+@startuml
+left to right direction
+
+class TelaFinanceira <<boundary>> {
+    +exibirListaAlunos()
+    +obterAlunoSelecionado()
+    +obterValorPagamento()
+    +obterDataPagamento()
+    +exibirConfirmacao()
+}
+
+class PagamentoController <<controller>> {
+    +carregarAlunos()
+    +registrarPagamento(aluno, valor, data)
+    +atualizarSaldo(aluno)
+}
+
+class Secretaria <<entity>> {
+    -nome: String
+    -email: String
+    +getNome()
+    +getEmail()
+}
+
+class RegistroFinanceiro <<entity>> {
+    -valorPago: Decimal
+    -valorDevido: Decimal
+    -status: String
+    +adicionarPagamento(pagamento)
+    +atualizarStatus()
+    +calcularSaldo()
+}
+
+class Pagamento <<entity>> {
+    -valor: Decimal
+    -data: Date
+    -status: String
+    +getValor()
+    +getData()
+}
+
+class Aluno <<entity>> {
+    -nome: String
+    -email: String
+    +getNome()
+    +getRegistroFinanceiro()
+}
+
+TelaFinanceira --> PagamentoController
+PagamentoController --> Secretaria
+PagamentoController --> Aluno
+PagamentoController --> Pagamento
+Aluno --> RegistroFinanceiro
+RegistroFinanceiro --> Pagamento
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES APLICADOS
+' ============================================
+'
+' PADRÕES DE ANÁLISE:
+' - BCE (Boundary-Controller-Entity): Separação entre
+'   interface (TelaFinanceira), lógica (PagamentoController)
+'   e dados (Secretaria, Pagamento, RegistroFinanceiro, Aluno).
+' - GRASP Controller: PagamentoController coordena o
+'   registro do pagamento e atualização do saldo.
+' - Information Expert: RegistroFinanceiro sabe como
+'   atualizar o saldo e status ao receber um pagamento.
+'
+' PADRÕES DE PROJETO:
+' - Nenhum padrão de projeto foi necessário. O registro
+'   de pagamento é um processo direto sem variações
+'   comportamentais ou criação complexa.
+'
+' JUSTIFICATIVA:
+' O fluxo é linear e bem definido. A entidade
+' RegistroFinanceiro encapsula a lógica de cálculo
+' seguindo o princípio Information Expert.

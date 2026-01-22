@@ -1,0 +1,17 @@
+@startuml
+left to right direction
+
+actor Aluno
+actor Motorista
+actor Secretaria as "Secretária"
+
+usecase "Realizar Login" as UC2
+usecase "Validar Credenciais" as UC2a
+
+UC2 ..> UC2a : <<include>>
+
+Aluno --> UC2
+Motorista --> UC2
+Secretaria --> UC2
+
+@enduml

@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+
+actor Aluno
+actor Motorista
+
+usecase "Solicitar Troca de Ponto" as UC12
+usecase "Analisar Solicitação" as UC12a
+usecase "Aprovar Solicitação" as UC12b
+usecase "Rejeitar Solicitação" as UC12c
+
+UC12 ..> UC12a : <<include>>
+UC12a <.. UC12b : <<extend>>
+UC12a <.. UC12c : <<extend>>
+
+Aluno --> UC12
+Motorista --> UC12a
+
+@enduml

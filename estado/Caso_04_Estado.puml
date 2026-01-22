@@ -1,0 +1,42 @@
+@startuml
+
+title Caso 04 - Diagrama de Estados: Rota
+
+[*] --> Aguardando
+
+Aguardando : Rota configurada
+Aguardando : Aguardando início pelo motorista
+Aguardando --> EmAndamento : iniciar()
+
+EmAndamento : Viagem em progresso
+EmAndamento : Alunos notificados
+EmAndamento --> EmAndamento : atualizarPonto()
+EmAndamento --> Finalizada : finalizarRota()
+
+Finalizada : Viagem concluída
+Finalizada : Todos os pontos percorridos
+Finalizada --> [*]
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DO DIAGRAMA DE ESTADOS
+' ============================================
+'
+' POR QUE O DIAGRAMA É NECESSÁRIO:
+' - A entidade Rota possui ciclo de vida bem definido
+' - O estado da rota determina as ações possíveis
+' - Alunos precisam ser notificados nas transições
+' - O sistema precisa rastrear o progresso da viagem
+'
+' ESTADOS IDENTIFICADOS:
+' - Aguardando: Rota criada, esperando motorista iniciar
+' - EmAndamento: Viagem em progresso, pontos sendo atualizados
+' - Finalizada: Viagem concluída
+'
+' PADRÕES DE PROJETO APLICADOS:
+' - Observer (OBS): Aplicado nas transições de estado.
+'   Quando a rota muda de Aguardando para EmAndamento,
+'   os alunos são notificados automaticamente.
+'   O ServicoNotificacao é acionado em cada transição
+'   relevante para manter os observadores informados.
