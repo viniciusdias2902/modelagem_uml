@@ -1,69 +1,81 @@
 @startuml
 
 actor Motorista
-
 participant ":TelaControleRota" as TCR <<boundary>>
-participant ":RotaController" as RC <<controller>>
+participant ":IniciarRotaController" as IRC <<controller>>
+participant ":RotaRepository" as RR <<repository>>
 participant ":Rota" as R <<entity>>
-participant ":Aluno" as A <<entity>>
-participant ":ServicoNotificacao" as SN <<boundary>>
+participant ":Observer" as OBS <<interface>>
 
-Motorista -> TCR: acessarTelaControleRota()
+== Carregar Rota ==
+
+Motorista -> TCR: acessarTela()
 activate TCR
 
-TCR -> RC: carregarRota(data)
-activate RC
+TCR -> IRC: carregarRota(data)
+activate IRC
 
-RC -> R: getStatus()
-activate R
-R --> RC: status
-deactivate R
+IRC -> RR: findByData(data)
+activate RR
+RR --> IRC: rota
+deactivate RR
 
-RC --> TCR: rota
-deactivate RC
+IRC --> TCR: rota
+deactivate IRC
 
-TCR -> TCR: exibirRota()
+TCR -> TCR: exibirRota(rota)
 TCR -> TCR: exibirBotaoIniciar()
+TCR --> Motorista: tela com rota
+
+== Iniciar Rota ==
 
 Motorista -> TCR: clicarIniciarRota()
 
-TCR -> RC: iniciarRota()
-activate RC
+TCR -> IRC: iniciarRota(rota)
+activate IRC
 
-RC -> R: iniciar()
+IRC -> R: getStatus()
 activate R
-R --> RC: ok
+R --> IRC: NAO_INICIADA
 deactivate R
 
-RC -> R: getAlunos()
+IRC -> R: iniciar()
 activate R
-R --> RC: listaAlunos
+note right
+  Information Expert:
+  Rota.iniciar() atualiza
+  status e horaInicio
+end note
+R --> IRC: void
 deactivate R
 
-RC -> RC: notificarAlunos()
+IRC -> RR: save(rota)
 
-loop para cada aluno
-    RC -> SN: enviarNotificacao(aluno, mensagem)
-    activate SN
-    
-    SN -> A: receberNotificacao(mensagem)
-    activate A
-    A --> SN: ok
-    deactivate A
-    
-    SN --> RC: enviado
-    deactivate SN
+== Padrão Observer: Notificar Alunos ==
+
+IRC -> IRC: notify(new EventoRota(ROTA_INICIADA, rota))
+
+group Observer Pattern
+    loop para cada observer registrado
+        IRC -> OBS: update(evento)
+        activate OBS
+        note right
+          NotificacaoAlunoObserver:
+          1. Obtém alunos da rota via evento.getRota().getAlunos()
+          2. Para cada aluno, envia notificação
+             via ServicoNotificacao (boundary)
+        end note
+        OBS --> IRC: void
+        deactivate OBS
+    end
 end
 
-RC --> TCR: sucesso
-deactivate RC
+IRC --> TCR: sucesso
+deactivate IRC
 
-TCR -> TCR: exibirConfirmacao()
-
-TCR --> Motorista: confirmacao
+TCR -> TCR: exibirConfirmacao("Rota iniciada com sucesso!")
+TCR --> Motorista: confirmação
 deactivate TCR
-
-
 
 @enduml
 
@@ -72,22 +84,23 @@ deactivate TCR
 ' ============================================
 '
 ' GRASP Controller:
-' - RotaController coordena o início da rota e
-'   orquestra a notificação dos alunos.
+' - IniciarRotaController recebe a requisição da boundary
+'   e coordena o fluxo de início da rota.
 '
-' Observer (OBS):
-' - O padrão é evidenciado no loop de notificação.
-' - Quando a rota é iniciada, todos os alunos inscritos
-'   são notificados através do ServicoNotificacao.
-' - A Rota mantém a lista de alunos (observadores).
+' Observer (GoF):
+' - O controller implementa Subject e mantém lista de observers
+' - Após iniciar a rota, dispara notify(evento)
+' - Cada observer registrado recebe update(evento)
+' - NotificacaoAlunoObserver processa o evento:
+'   - Extrai a rota do evento
+'   - Obtém os alunos da rota
+'   - Usa ServicoNotificacao (boundary) para notificar
+' - O controller não conhece os observers concretos
+'
+' Information Expert:
+' - Rota.iniciar() gerencia seu próprio estado
+' - Rota.getAlunos() fornece lista de alunos
 '
 ' Low Coupling:
-' - RotaController usa ServicoNotificacao para notificar,
-'   não conhecendo detalhes de como a notificação é feita.
-'
-' High Cohesion:
-' - ServicoNotificacao foca apenas em enviar notificações.
-' - Rota gerencia seu estado e lista de alunos.
-'
-' ATORES:
-' - Motorista: Inicia a rota para informar que a viagem começou
+' - Controller não conhece como a notificação é feita
+' - Observers são registrados/removidos dinamicamente

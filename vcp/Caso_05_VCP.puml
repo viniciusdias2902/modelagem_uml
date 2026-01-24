@@ -1,52 +1,103 @@
 @startuml
 left to right direction
 
+' ==========================================
+' PADRÃO OBSERVER - IMPLEMENTAÇÃO CLÁSSICA
+' ==========================================
+
+interface Subject <<interface>> {
+    +attach(observer: Observer)
+    +detach(observer: Observer)
+    +notify(evento: EventoRota)
+}
+
+interface Observer <<interface>> {
+    +update(evento: EventoRota)
+}
+
+class EventoRota {
+    -tipo: TipoEventoRota
+    -rota: Rota
+    -timestamp: DateTime
+    +getTipo(): TipoEventoRota
+    +getRota(): Rota
+}
+
+enum TipoEventoRota {
+    ROTA_INICIADA
+}
+
+class NotificacaoAlunoObserver {
+    +update(evento: EventoRota)
+}
+
+' ==========================================
+' ECB
+' ==========================================
+
 class TelaControleRota <<boundary>> {
-    +exibirRota()
+    +exibirRota(rota: Rota)
     +exibirBotaoIniciar()
-    +exibirConfirmacao()
+    +exibirConfirmacao(mensagem: String)
+    +exibirErro(mensagem: String)
 }
 
 class ServicoNotificacao <<boundary>> {
-    +enviarNotificacao(aluno, mensagem)
+    +enviarNotificacao(destinatario: String, titulo: String, mensagem: String)
 }
 
-class RotaController <<controller>> {
-    +carregarRota(data)
-    +iniciarRota()
-    +notificarAlunos()
+class IniciarRotaController <<controller>> {
+    -observers: List<Observer>
+    +attach(observer: Observer)
+    +detach(observer: Observer)
+    +notify(evento: EventoRota)
+    +carregarRota(data: Date): Rota
+    +iniciarRota(rota: Rota)
 }
 
 class Rota <<entity>> {
+    -id: UUID
     -data: Date
-    -status: String
+    -status: StatusRota
     -horaInicio: DateTime
     +iniciar()
-    +getStatus()
-    +getAlunos()
-}
-
-class Motorista <<entity>> {
-    -nome: String
-    -email: String
-    +getNome()
-    +getEmail()
+    +getStatus(): StatusRota
+    +getAlunos(): List<Aluno>
 }
 
 class Aluno <<entity>> {
+    -id: UUID
     -nome: String
     -email: String
-    -dispositivo: String
-    +getNome()
-    +receberNotificacao(mensagem)
+    +getNome(): String
+    +getEmail(): String
 }
 
-TelaControleRota --> RotaController
-RotaController --> Rota
-RotaController --> Motorista
-RotaController --> ServicoNotificacao
-Rota --> Aluno
-ServicoNotificacao --> Aluno
+enum StatusRota <<entity>> {
+    NAO_INICIADA
+    EM_ANDAMENTO
+    FINALIZADA
+}
+
+' ==========================================
+' RELACIONAMENTOS
+' ==========================================
+
+IniciarRotaController ..|> Subject
+NotificacaoAlunoObserver ..|> Observer
+
+TelaControleRota --> IniciarRotaController
+IniciarRotaController o--> "0..*" Observer : observers
+IniciarRotaController --> Rota
+
+NotificacaoAlunoObserver --> ServicoNotificacao
+NotificacaoAlunoObserver --> Aluno
+Observer ..> EventoRota
+
+Rota --> "0..*" Aluno
+Rota --> StatusRota
+EventoRota --> TipoEventoRota
+EventoRota --> Rota
 
 @enduml
 
@@ -56,19 +107,27 @@ ServicoNotificacao --> Aluno
 '
 ' PADRÕES DE ANÁLISE:
 ' - BCE (Boundary-Controller-Entity): Separação entre
-'   interface (TelaControleRota), lógica (RotaController)
-'   e dados (Rota, Motorista, Aluno).
-' - GRASP Controller: RotaController coordena o início
-'   da rota e o disparo das notificações.
-' - Information Expert: Rota conhece seus alunos inscritos
-'   e gerencia seu próprio status.
+'   interfaces (TelaControleRota, ServicoNotificacao),
+'   lógica (IniciarRotaController) e dados (Rota, Aluno).
+' - GRASP Controller: IniciarRotaController coordena o
+'   fluxo de início da rota.
+' - Information Expert: Rota conhece seus alunos e
+'   gerencia seu próprio status através do método iniciar().
 '
 ' PADRÕES DE PROJETO:
-' - Observer: Aplicado para notificar os alunos quando a
-'   rota é iniciada. A Rota mantém lista de observadores
-'   (alunos) e os notifica sobre mudanças de estado.
+' - Observer (GoF): Implementação clássica.
+'   - Subject: interface com attach/detach/notify
+'   - Observer: interface com update(evento)
+'   - ConcreteSubject: IniciarRotaController mantém lista
+'     de observers e dispara notify() após iniciar rota
+'   - ConcreteObserver: NotificacaoAlunoObserver reage ao
+'     evento ROTA_INICIADA e usa ServicoNotificacao
+'     (boundary) para notificar cada aluno da rota
+'   - EventoRota: encapsula informações do evento
 '
 ' JUSTIFICATIVA:
 ' O Observer é adequado pois múltiplos alunos precisam ser
-' notificados quando o estado da rota muda (início da viagem),
-' desacoplando a lógica de notificação da entidade Rota.
+' notificados quando a rota é iniciada. O padrão desacopla
+' a lógica de início da rota da lógica de notificação,
+' permitindo adicionar novos observers sem modificar o
+' controller (ex: LogObserver, SMSObserver).
