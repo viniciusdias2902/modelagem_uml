@@ -1,19 +1,21 @@
 @startuml
 
-title Caso 01 - Cadastrar Usuário
-
-actor Administrador as Admin
-actor Aluno as AlunoAtor
-
+actor Administrador
 participant ":TelaCadastro" as TC <<boundary>>
 participant ":CadastroController" as CC <<controller>>
-participant ":UsuarioFactory" as UF <<controller>>
-participant ":Usuario" as U <<entity>>
+participant ":UsuarioFactory" as UF
+participant ":UsuarioRepository" as UR <<repository>>
+participant ":Usuario" as U <<interface>>
 
-Admin -> TC: acessarTelaCadastro()
+== Cadastrar Usuário ==
+
+Administrador -> TC: acessarTela()
 activate TC
 
 TC -> TC: exibirFormulario()
+TC --> Administrador: formulário
+
+Administrador -> TC: preencherDados(nome, email, senha, tipo)
 TC -> TC: obterDados()
 
 TC -> CC: cadastrarUsuario(dados)
@@ -21,24 +23,41 @@ activate CC
 
 CC -> CC: validarDados(dados)
 
+CC -> UR: findByEmail(email)
+activate UR
+UR --> CC: null
+deactivate UR
+
+== Padrão Factory: Criar Usuário ==
+
 CC -> UF: criarUsuario(tipo, dados)
 activate UF
 
+note right of UF
+  Factory cria instância
+  concreta baseada no tipo:
+  - ALUNO → new Aluno()
+  - MOTORISTA → new Motorista()
+  - SECRETARIA → new Secretaria()
+end note
+
 create U
 UF -> U: new(dados)
-activate U
-U --> UF: usuario
-deactivate U
+note right: Instância concreta (Aluno, Motorista ou Secretaria)
 
 UF --> CC: usuario
 deactivate UF
+
+CC -> UR: save(usuario)
+activate UR
+UR --> CC: usuarioSalvo
+deactivate UR
 
 CC --> TC: sucesso
 deactivate CC
 
 TC -> TC: exibirMensagemSucesso()
-
-TC --> Admin: mensagem
+TC --> Administrador: "Usuário cadastrado com sucesso"
 deactivate TC
 
 @enduml
@@ -49,21 +68,22 @@ deactivate TC
 '
 ' GRASP Controller:
 ' - CadastroController recebe a requisição da boundary
-'   e coordena todo o fluxo de cadastro.
+'   e coordena o fluxo de cadastro.
 '
-' Factory (FAC):
-' - UsuarioFactory encapsula a criação do usuário,
-'   permitindo criar diferentes tipos (Aluno, Motorista,
-'   Secretaria, Administrador) sem expor a lógica ao controller.
+' Factory (GoF):
+' - UsuarioFactory encapsula a criação do usuário.
+' - O controller solicita criarUsuario(tipo, dados)
+' - A factory retorna Usuario (interface) mas cria
+'   a instância concreta (Aluno, Motorista ou Secretaria)
+'   baseada no parâmetro tipo.
+' - O controller não conhece as classes concretas.
 '
 ' Low Coupling:
-' - A TelaCadastro não conhece as entidades diretamente,
-'   delegando ao controller.
-' - O controller não sabe como criar usuários, delegando à factory.
+' - TelaCadastro não conhece entidades diretamente.
+' - CadastroController não conhece classes concretas,
+'   apenas a interface Usuario.
 '
 ' High Cohesion:
-' - Cada participante tem uma única responsabilidade bem definida.
-'
-' ATORES:
-' - Administrador: Pode cadastrar qualquer tipo de usuário
-' - Aluno: Pode realizar seu próprio cadastro (auto-cadastro)
+' - CadastroController: coordena cadastro
+' - UsuarioFactory: cria usuários
+' - UsuarioRepository: persiste usuários

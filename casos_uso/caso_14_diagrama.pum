@@ -1,0 +1,15 @@
+@startuml
+left to right direction
+
+actor Motorista as "Motorista"
+
+usecase "Analisar Solicitação\nde Troca" as UC9
+usecase "Aprovar Solicitação" as UC9a
+usecase "Rejeitar Solicitação" as UC9b
+
+UC9 <.. UC9a : <<extend>>
+UC9 <.. UC9b : <<extend>>
+
+Motorista --> UC9
+
+@enduml

@@ -1,0 +1,141 @@
+@startuml UC13_Sequencia
+
+actor Motorista
+participant ":TelaAnaliseSolicitacao" as TAS <<boundary>>
+participant ":AnaliseSolicitacaoController" as ASC <<controller>>
+participant ":SolicitacaoRepository" as SR <<repository>>
+participant ":Solicitacao" as S <<entity>>
+participant ":Aluno" as A <<entity>>
+participant ":Observer" as OBS <<interface>>
+
+== Carregar Solicitações Pendentes ==
+
+Motorista -> TAS: acessarTela()
+activate TAS
+
+TAS -> ASC: carregarSolicitacoesPendentes()
+activate ASC
+
+ASC -> SR: findByStatus(PENDENTE)
+activate SR
+SR --> ASC: listaSolicitacoes
+deactivate SR
+
+ASC --> TAS: listaSolicitacoes
+deactivate ASC
+
+TAS -> TAS: exibirListaSolicitacoes(lista)
+TAS --> Motorista: tela com solicitações pendentes
+
+== Analisar Solicitação ==
+
+Motorista -> TAS: selecionarSolicitacao(id)
+TAS -> TAS: exibirDetalhesSolicitacao(solicitacao)
+TAS --> Motorista: detalhes (aluno, pontos, justificativa)
+
+Motorista -> TAS: informarDecisao()
+TAS -> TAS: obterDecisao()
+
+== Processar Decisão ==
+
+alt decisao == "aprovar"
+    
+    TAS -> ASC: aprovarSolicitacao(solicitacao)
+    activate ASC
+    
+    ASC -> S: aprovar()
+    activate S
+    S -> S: status = APROVADA
+    S -> S: dataDecisao = now()
+    S --> ASC: void
+    deactivate S
+    
+    ASC -> S: getAluno()
+    activate S
+    S --> ASC: aluno
+    deactivate S
+    
+    ASC -> S: getPontoDesejado()
+    activate S
+    S --> ASC: novoPonto
+    deactivate S
+    
+    ASC -> A: setPontoEmbarque(novoPonto)
+    activate A
+    note right: Atualiza ponto do aluno
+    A --> ASC: void
+    deactivate A
+    
+    ASC -> SR: save(solicitacao)
+    
+    == Padrão Observer: Notificar Aprovação ==
+    
+    ASC -> ASC: notify(new EventoSolicitacao(SOLICITACAO_APROVADA, solicitacao))
+    
+    group Observer Pattern
+        loop para cada observer registrado
+            ASC -> OBS: update(evento)
+            activate OBS
+            note right
+              NotificacaoAlunoObserver:
+              Envia notificação de aprovação
+              ao aluno com novo ponto
+            end note
+            OBS --> ASC: void
+            deactivate OBS
+        end
+    end
+    
+    ASC --> TAS: sucesso
+    deactivate ASC
+    
+    TAS -> TAS: exibirConfirmacao("Solicitação aprovada!")
+
+else decisao == "rejeitar"
+    
+    TAS -> TAS: obterMotivoRejeicao()
+    TAS --> Motorista: solicitar motivo
+    Motorista -> TAS: informarMotivo(motivo)
+    
+    TAS -> ASC: rejeitarSolicitacao(solicitacao, motivo)
+    activate ASC
+    
+    ASC -> S: rejeitar(motivo)
+    activate S
+    S -> S: status = REJEITADA
+    S -> S: motivoRejeicao = motivo
+    S -> S: dataDecisao = now()
+    S --> ASC: void
+    deactivate S
+    
+    ASC -> SR: save(solicitacao)
+    
+    == Padrão Observer: Notificar Rejeição ==
+    
+    ASC -> ASC: notify(new EventoSolicitacao(SOLICITACAO_REJEITADA, solicitacao))
+    
+    group Observer Pattern
+        loop para cada observer registrado
+            ASC -> OBS: update(evento)
+            activate OBS
+            note right
+              NotificacaoAlunoObserver:
+              Envia notificação de rejeição
+              ao aluno com o motivo
+            end note
+            OBS --> ASC: void
+            deactivate OBS
+        end
+    end
+    
+    ASC --> TAS: sucesso
+    deactivate ASC
+    
+    TAS -> TAS: exibirConfirmacao("Solicitação rejeitada!")
+
+end
+
+TAS --> Motorista: confirmação
+deactivate TAS
+
+@enduml

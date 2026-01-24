@@ -1,0 +1,86 @@
+@startuml UC12_Sequencia
+
+actor Aluno
+participant ":TelaSolicitarTroca" as TS <<boundary>>
+participant ":SolicitacaoController" as SC <<controller>>
+participant ":PontoEmbarqueRepository" as PER <<repository>>
+participant ":SolicitacaoRepository" as SR <<repository>>
+participant ":Aluno" as A <<entity>>
+participant ":Solicitacao" as S <<entity>>
+participant ":Observer" as OBS <<interface>>
+
+== Carregar Pontos Disponíveis ==
+
+Aluno -> TS: acessarTela()
+activate TS
+
+TS -> SC: carregarPontosDisponiveis(rota)
+activate SC
+
+SC -> PER: findByRota(rota)
+activate PER
+PER --> SC: listaPontos
+deactivate PER
+
+SC --> TS: listaPontos
+deactivate SC
+
+TS -> TS: exibirPontosDisponiveis(listaPontos)
+TS --> Aluno: tela com pontos disponíveis
+
+== Criar Solicitação ==
+
+Aluno -> TS: selecionarPonto(novoPonto)
+Aluno -> TS: informarJustificativa(texto)
+Aluno -> TS: confirmarSolicitacao()
+
+TS -> SC: criarSolicitacao(aluno, novoPonto, justificativa)
+activate SC
+
+SC -> SC: validarSolicitacao(aluno, novoPonto)
+note right
+  Valida:
+  - Ponto diferente do atual
+  - Sem solicitação pendente
+end note
+
+SC -> A: getPontoEmbarque()
+activate A
+A --> SC: pontoAtual
+deactivate A
+
+create S
+SC -> S: new(aluno, pontoAtual, novoPonto, justificativa)
+note right: status = PENDENTE
+
+SC -> SR: save(solicitacao)
+activate SR
+SR --> SC: solicitacaoSalva
+deactivate SR
+
+== Padrão Observer: Notificar Motorista ==
+
+SC -> SC: notify(new EventoSolicitacao(SOLICITACAO_CRIADA, solicitacao))
+
+group Observer Pattern
+    loop para cada observer registrado
+        SC -> OBS: update(evento)
+        activate OBS
+        note right
+          NotificacaoMotoristaObserver:
+          1. Obtém motoristas da rota
+          2. Envia notificação para cada um
+        end note
+        OBS --> SC: void
+        deactivate OBS
+    end
+end
+
+SC --> TS: solicitacao
+deactivate SC
+
+TS -> TS: exibirConfirmacao("Solicitação enviada com sucesso!")
+TS --> Aluno: confirmação
+deactivate TS
+
+@enduml

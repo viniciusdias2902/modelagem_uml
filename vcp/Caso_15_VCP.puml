@@ -1,0 +1,151 @@
+@startuml
+left to right direction
+
+' ==========================================
+' PADRÃO OBSERVER
+' ==========================================
+
+interface Subject <<interface>> {
+    +attach(observer: Observer)
+    +detach(observer: Observer)
+    +notify(evento: EventoSolicitacao)
+}
+
+interface Observer <<interface>> {
+    +update(evento: EventoSolicitacao)
+}
+
+class EventoSolicitacao {
+    -tipo: TipoEvento
+    -solicitacao: Solicitacao
+    +getTipo(): TipoEvento
+    +getSolicitacao(): Solicitacao
+}
+
+enum TipoEvento {
+    SOLICITACAO_APROVADA
+    SOLICITACAO_REJEITADA
+}
+
+class NotificacaoAlunoObserver {
+    +update(evento: EventoSolicitacao)
+}
+
+' ==========================================
+' ECB
+' ==========================================
+
+class TelaAnaliseSolicitacao <<boundary>> {
+    +exibirListaSolicitacoes(lista: List)
+    +exibirDetalhesSolicitacao(s: Solicitacao)
+    +obterDecisao(): String
+    +obterMotivoRejeicao(): String
+    +exibirConfirmacao(mensagem: String)
+    +exibirErro(mensagem: String)
+}
+
+class ServicoNotificacao <<boundary>> {
+    +enviarNotificacao(destinatario: String, titulo: String, mensagem: String)
+}
+
+class AnaliseSolicitacaoController <<controller>> {
+    -observers: List<Observer>
+    +attach(observer: Observer)
+    +detach(observer: Observer)
+    +notify(evento: EventoSolicitacao)
+    +carregarSolicitacoesPendentes(): List
+    +aprovarSolicitacao(solicitacao: Solicitacao)
+    +rejeitarSolicitacao(solicitacao: Solicitacao, motivo: String)
+}
+
+class Solicitacao <<entity>> {
+    -id: UUID
+    -pontoAtual: PontoEmbarque
+    -pontoDesejado: PontoEmbarque
+    -justificativa: String
+    -status: StatusSolicitacao
+    -dataCriacao: DateTime
+    -dataDecisao: DateTime
+    -motivoRejeicao: String
+    +aprovar()
+    +rejeitar(motivo: String)
+    +getAluno(): Aluno
+    +getPontoDesejado(): PontoEmbarque
+    +getStatus(): StatusSolicitacao
+}
+
+class Aluno <<entity>> {
+    -id: UUID
+    -nome: String
+    -email: String
+    -pontoEmbarque: PontoEmbarque
+    +getEmail(): String
+    +getPontoEmbarque(): PontoEmbarque
+    +setPontoEmbarque(ponto: PontoEmbarque)
+}
+
+class PontoEmbarque <<entity>> {
+    -id: UUID
+    -nome: String
+    -endereco: String
+    +getNome(): String
+}
+
+enum StatusSolicitacao <<entity>> {
+    PENDENTE
+    APROVADA
+    REJEITADA
+}
+
+' ==========================================
+' RELACIONAMENTOS
+' ==========================================
+
+AnaliseSolicitacaoController ..|> Subject
+NotificacaoAlunoObserver ..|> Observer
+
+TelaAnaliseSolicitacao --> AnaliseSolicitacaoController
+AnaliseSolicitacaoController o--> "0..*" Observer : observers
+AnaliseSolicitacaoController --> Solicitacao
+AnaliseSolicitacaoController --> Aluno
+
+NotificacaoAlunoObserver --> ServicoNotificacao
+Observer ..> EventoSolicitacao
+
+Solicitacao --> Aluno
+Solicitacao --> "2" PontoEmbarque
+Solicitacao --> StatusSolicitacao
+EventoSolicitacao --> TipoEvento
+EventoSolicitacao --> Solicitacao
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES APLICADOS
+' ============================================
+'
+' PADRÕES DE ANÁLISE:
+' - BCE (Boundary-Controller-Entity): Separação entre
+'   interfaces (TelaAnaliseSolicitacao, ServicoNotificacao),
+'   lógica (AnaliseSolicitacaoController) e dados
+'   (Solicitacao, Aluno, PontoEmbarque).
+' - GRASP Controller: AnaliseSolicitacaoController coordena
+'   o fluxo de análise e decisão sobre a solicitação.
+' - Information Expert: Solicitacao gerencia seu próprio
+'   status através dos métodos aprovar() e rejeitar().
+'
+' PADRÕES DE PROJETO:
+' - Observer (GoF): Implementado para notificar o aluno
+'   quando a solicitação é aprovada ou rejeitada.
+'   - Subject: interface com attach/detach/notify
+'   - Observer: interface com update(evento)
+'   - ConcreteSubject: AnaliseSolicitacaoController mantém
+'     lista de observers e dispara notify() após decisão
+'   - ConcreteObserver: NotificacaoAlunoObserver reage aos
+'     eventos SOLICITACAO_APROVADA e SOLICITACAO_REJEITADA
+'     e usa ServicoNotificacao (boundary) para notificar
+'
+' JUSTIFICATIVA:
+' O Observer desacopla a lógica de decisão da notificação.
+' Permite adicionar novos observers (ex: LogObserver,
+' AuditoriaObserver) sem modificar o controller.

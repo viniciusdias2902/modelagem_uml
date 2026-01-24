@@ -1,99 +1,77 @@
 @startuml
 
-title Caso 06 - Visualizar Rota
-
-actor Aluno
-
-participant ":TelaVisualizacaoRota" as TVR <<boundary>>
-participant ":VisualizacaoRotaController" as VRC <<controller>>
+actor Motorista
+participant ":TelaControleRota" as TCR <<boundary>>
+participant ":PontoAtualController" as PAC <<controller>>
+participant ":RotaRepository" as RR <<repository>>
 participant ":Rota" as R <<entity>>
-participant ":PontoEmbarque" as PE <<entity>>
-participant ":Aluno" as A <<entity>>
+participant ":Observer" as OBS <<interface>>
 
-Aluno -> TVR: acessarTelaVisualizacaoRota()
-activate TVR
+== Carregar Pontos da Rota ==
 
-TVR -> VRC: carregarRota()
-activate VRC
+Motorista -> TCR: acessarTela()
+activate TCR
 
-VRC -> R: getPontos()
+TCR -> PAC: carregarPontosRota(rota)
+activate PAC
+
+PAC -> RR: findById(rotaId)
+activate RR
+RR --> PAC: rota
+deactivate RR
+
+PAC -> R: getPontos()
 activate R
-R --> VRC: listaPontos
+R --> PAC: listaPontos
 deactivate R
 
-VRC -> R: getPontoAtual()
+PAC --> TCR: listaPontos
+deactivate PAC
+
+TCR -> TCR: exibirListaPontos(listaPontos)
+TCR --> Motorista: tela com pontos da rota
+
+== Atualizar Ponto Atual ==
+
+Motorista -> TCR: selecionarPonto(ponto)
+TCR -> TCR: obterPontoSelecionado()
+
+TCR -> PAC: atualizarPontoAtual(rota, ponto)
+activate PAC
+
+PAC -> R: setPontoAtual(ponto)
 activate R
-R --> VRC: pontoAtual
+R --> PAC: void
 deactivate R
 
-VRC --> TVR: rota
-deactivate VRC
+PAC -> RR: save(rota)
 
-TVR -> VRC: carregarPontos()
-activate VRC
+== Padrão Observer: Notificar Alunos ==
 
-loop para cada ponto
-    VRC -> PE: getNome()
-    activate PE
-    PE --> VRC: nome
-    deactivate PE
-    
-    VRC -> PE: getReferencia()
-    activate PE
-    PE --> VRC: referencia
-    deactivate PE
-    
-    VRC -> PE: getOrdem()
-    activate PE
-    PE --> VRC: ordem
-    deactivate PE
+PAC -> PAC: notify(new EventoPosicao(rota, ponto))
+
+group Observer Pattern
+    loop para cada observer registrado
+        PAC -> OBS: update(evento)
+        activate OBS
+        note right
+          NotificacaoAlunoObserver:
+          1. Obtém alunos da rota
+          2. Envia notificação para cada
+             aluno via ServicoNotificacao
+        end note
+        OBS --> PAC: void
+        deactivate OBS
+    end
 end
 
-VRC --> TVR: pontos
-deactivate VRC
+PAC --> TCR: sucesso
+deactivate PAC
 
-TVR -> TVR: exibirRota()
-TVR -> TVR: exibirListaPontos()
 
-TVR -> VRC: identificarPontoAluno(aluno)
-activate VRC
-
-VRC -> A: getPontoEmbarque()
-activate A
-A --> VRC: pontoEmbarque
-deactivate A
-
-VRC --> TVR: pontoAluno
-deactivate VRC
-
-TVR -> TVR: destacarPontoAluno()
-
-TVR --> Aluno: rotaExibida
-deactivate TVR
+TCR -> TCR: exibirPontoAtual(ponto)
+TCR -> TCR: exibirConfirmacao("Ponto atualizado!")
+TCR --> Motorista: confirmação
+deactivate TCR
 
 @enduml
-
-' ============================================
-' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
-' ============================================
-'
-' GRASP Controller:
-' - VisualizacaoRotaController coordena o carregamento
-'   da rota, pontos e identificação do ponto do aluno.
-'
-' Information Expert (IE):
-' - Rota conhece sua lista de pontos e ponto atual.
-' - PontoEmbarque conhece seus próprios dados (nome, referência, ordem).
-' - Aluno conhece seu ponto de embarque.
-'
-' Low Coupling:
-' - TelaVisualizacaoRota não acessa entidades diretamente,
-'   toda comunicação passa pelo controller.
-'
-' High Cohesion:
-' - VisualizacaoRotaController foca apenas em operações
-'   de leitura e organização de dados da rota.
-' - Não há lógica de negócio complexa, apenas consulta.
-'
-' ATORES:
-' - Aluno: Visualiza a rota e identifica seu ponto de embarque

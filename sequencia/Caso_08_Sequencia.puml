@@ -1,78 +1,73 @@
 @startuml
 
-title Caso 08 - Atualizar Pagamento
+actor Aluno
 
-actor Secretaria as "Secretária"
-
-participant ":TelaFinanceira" as TF <<boundary>>
-participant ":PagamentoController" as PC <<controller>>
+participant ":TelaVisualizacaoRota" as TVR <<boundary>>
+participant ":VisualizacaoRotaController" as VRC <<controller>>
+participant ":Rota" as R <<entity>>
+participant ":PontoEmbarque" as PE <<entity>>
 participant ":Aluno" as A <<entity>>
-participant ":Pagamento" as P <<entity>>
-participant ":RegistroFinanceiro" as RF <<entity>>
 
-Secretaria -> TF: acessarTelaFinanceira()
-activate TF
+Aluno -> TVR: acessarTelaVisualizacaoRota()
+activate TVR
 
-TF -> PC: carregarAlunos()
-activate PC
+TVR -> VRC: carregarRota()
+activate VRC
 
-loop para cada aluno
-    PC -> A: getNome()
-    activate A
-    A --> PC: nome
-    deactivate A
+VRC -> R: getPontos()
+activate R
+R --> VRC: listaPontos
+deactivate R
+
+VRC -> R: getPontoAtual()
+activate R
+R --> VRC: pontoAtual
+deactivate R
+
+VRC --> TVR: rota
+deactivate VRC
+
+TVR -> VRC: carregarPontos()
+activate VRC
+
+loop para cada ponto
+    VRC -> PE: getNome()
+    activate PE
+    PE --> VRC: nome
+    deactivate PE
+    
+    VRC -> PE: getReferencia()
+    activate PE
+    PE --> VRC: referencia
+    deactivate PE
+    
+    VRC -> PE: getOrdem()
+    activate PE
+    PE --> VRC: ordem
+    deactivate PE
 end
 
-PC --> TF: listaAlunos
-deactivate PC
+VRC --> TVR: pontos
+deactivate VRC
 
-TF -> TF: exibirListaAlunos()
+TVR -> TVR: exibirRota()
+TVR -> TVR: exibirListaPontos()
 
-Secretaria -> TF: selecionarAluno()
-TF -> TF: obterAlunoSelecionado()
+TVR -> VRC: identificarPontoAluno(aluno)
+activate VRC
 
-Secretaria -> TF: informarPagamento()
-TF -> TF: obterValorPagamento()
-TF -> TF: obterDataPagamento()
-
-TF -> PC: registrarPagamento(aluno, valor, data)
-activate PC
-
-create P
-PC -> P: new(valor, data)
-activate P
-P --> PC: pagamento
-deactivate P
-
-PC -> A: getRegistroFinanceiro()
+VRC -> A: getPontoEmbarque()
 activate A
-A --> PC: registroFinanceiro
+A --> VRC: pontoEmbarque
 deactivate A
 
-PC -> RF: adicionarPagamento(pagamento)
-activate RF
-RF --> PC: ok
-deactivate RF
+VRC --> TVR: pontoAluno
+deactivate VRC
 
-PC -> PC: atualizarSaldo(aluno)
+TVR -> TVR: destacarPontoAluno()
 
-PC -> RF: calcularSaldo()
-activate RF
-RF --> PC: saldo
-deactivate RF
-
-PC -> RF: atualizarStatus()
-activate RF
-RF --> PC: ok
-deactivate RF
-
-PC --> TF: sucesso
-deactivate PC
-
-TF -> TF: exibirConfirmacao()
-
-TF --> Secretaria: confirmacao
-deactivate TF
+TVR --> Aluno: rotaExibida
+deactivate TVR
 
 @enduml
 
@@ -81,21 +76,22 @@ deactivate TF
 ' ============================================
 '
 ' GRASP Controller:
-' - PagamentoController coordena o registro do pagamento
-'   e a atualização do saldo do aluno.
+' - VisualizacaoRotaController coordena o carregamento
+'   da rota, pontos e identificação do ponto do aluno.
 '
 ' Information Expert (IE):
-' - RegistroFinanceiro sabe adicionar pagamentos, calcular
-'   saldo e atualizar seu próprio status.
-' - Aluno conhece seu registro financeiro.
+' - Rota conhece sua lista de pontos e ponto atual.
+' - PontoEmbarque conhece seus próprios dados (nome, referência, ordem).
+' - Aluno conhece seu ponto de embarque.
 '
 ' Low Coupling:
-' - TelaFinanceira não conhece a lógica de cálculo de saldo,
-'   delegando ao controller e às entidades.
+' - TelaVisualizacaoRota não acessa entidades diretamente,
+'   toda comunicação passa pelo controller.
 '
 ' High Cohesion:
-' - PagamentoController foca em operações de pagamento.
-' - RegistroFinanceiro centraliza a lógica financeira.
+' - VisualizacaoRotaController foca apenas em operações
+'   de leitura e organização de dados da rota.
+' - Não há lógica de negócio complexa, apenas consulta.
 '
 ' ATORES:
-' - Secretária: Registra pagamentos realizados pelos alunos
+' - Aluno: Visualiza a rota e identifica seu ponto de embarque

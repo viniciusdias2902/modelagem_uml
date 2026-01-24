@@ -1,64 +1,97 @@
 @startuml
 
-title Caso 11 - Cadastrar Ponto de Embarque
+actor Secretaria as "Secretária"
 
-actor Administrador
+participant ":TelaFinanceira" as TF <<boundary>>
+participant ":ComprovanteController" as CC <<controller>>
+participant ":Pagamento" as P <<entity>>
+participant ":Aluno" as A <<entity>>
+participant ":GeradorComprovante" as GC <<controller>>
+participant ":Comprovante" as C <<entity>>
 
-participant ":TelaGestaoPontos" as TGP <<boundary>>
-participant ":PontoEmbarqueController" as PEC <<controller>>
-participant ":PontoEmbarque" as PE <<entity>>
-participant ":Rota" as R <<entity>>
+Secretaria -> TF: acessarTelaFinanceira()
+activate TF
 
-Administrador -> TGP: acessarTelaGestaoPontos()
-activate TGP
+TF -> TF: exibirListaAlunos()
 
-TGP -> TGP: exibirFormulario()
+Secretaria -> TF: selecionarAluno()
+TF -> TF: obterAlunoSelecionado()
 
-Administrador -> TGP: preencherDados()
-TGP -> TGP: obterNome()
-TGP -> TGP: obterReferencia()
-TGP -> TGP: obterOrdem()
+TF -> CC: carregarPagamentos(aluno)
+activate CC
 
-Administrador -> TGP: confirmarCadastro()
-
-TGP -> PEC: cadastrarPonto(nome, referencia, ordem)
-activate PEC
-
-PEC -> PEC: validarDados(nome, referencia, ordem)
-
-create PE
-PEC -> PE: new(nome, referencia, ordem)
-activate PE
-PE --> PEC: pontoEmbarque
-deactivate PE
-
-PEC -> R: adicionarPonto(pontoEmbarque)
-activate R
-R --> PEC: ok
-deactivate R
-
-PEC -> PEC: atualizarOrdemRota()
-
-PEC -> R: reordenarPontos()
-activate R
-
-loop para cada ponto
-    R -> PE: setOrdem(novaOrdem)
-    activate PE
-    PE --> R: ok
-    deactivate PE
+loop para cada pagamento
+    CC -> P: getValor()
+    activate P
+    P --> CC: valor
+    deactivate P
+    
+    CC -> P: getData()
+    activate P
+    P --> CC: data
+    deactivate P
 end
 
-R --> PEC: ok
-deactivate R
+CC --> TF: listaPagamentos
+deactivate CC
 
-PEC --> TGP: sucesso
-deactivate PEC
+TF -> TF: exibirPagamentos(aluno)
 
-TGP -> TGP: exibirConfirmacao()
+Secretaria -> TF: selecionarPagamento()
+TF -> TF: obterPagamentoSelecionado()
 
-TGP --> Administrador: confirmacao
-deactivate TGP
+Secretaria -> TF: escolherFormato()
+TF -> TF: obterFormatoEscolhido()
+
+TF -> CC: gerarComprovante(pagamento, formato)
+activate CC
+
+CC -> CC: obterGeradorFormato(formato)
+
+CC -> P: getValor()
+activate P
+P --> CC: valor
+deactivate P
+
+CC -> P: getData()
+activate P
+P --> CC: data
+deactivate P
+
+CC -> P: getAluno()
+activate P
+P --> CC: aluno
+deactivate P
+
+CC -> A: getNome()
+activate A
+A --> CC: nome
+deactivate A
+
+CC -> GC: gerar(pagamento)
+activate GC
+
+create C
+GC -> C: new(pagamento, formato)
+activate C
+C --> GC: comprovante
+deactivate C
+
+GC -> C: getConteudo()
+activate C
+C --> GC: conteudo
+deactivate C
+
+GC --> CC: arquivo
+deactivate GC
+
+CC --> TF: arquivo
+deactivate CC
+
+TF -> TF: disponibilizarDownload(arquivo)
+
+TF --> Secretaria: downloadDisponivel
+deactivate TF
 
 @enduml
 
@@ -67,21 +100,26 @@ deactivate TGP
 ' ============================================
 '
 ' GRASP Controller:
-' - PontoEmbarqueController coordena a validação,
-'   criação do ponto e atualização da rota.
+' - ComprovanteController coordena o carregamento de
+'   pagamentos e a geração do comprovante.
+'
+' Strategy (STR):
+' - O padrão é evidenciado na chamada obterGeradorFormato().
+' - GeradorComprovante é a interface que define o contrato.
+' - GeradorPDF ou GeradorWord são selecionados em runtime
+'   conforme o formato escolhido pelo usuário.
+' - Permite adicionar novos formatos sem modificar o controller.
 '
 ' Information Expert (IE):
-' - PontoEmbarque conhece seus dados (nome, referência, ordem).
-' - Rota sabe como adicionar pontos e reordená-los,
-'   pois mantém a lista de pontos.
+' - Pagamento fornece seus dados (valor, data, aluno).
+' - Comprovante conhece seu próprio conteúdo.
 '
 ' Low Coupling:
-' - TelaGestaoPontos não conhece a lógica de ordenação,
-'   delegando ao controller e à entidade Rota.
+' - ComprovanteController não conhece implementações específicas,
+'   trabalha apenas com a interface GeradorComprovante.
 '
 ' High Cohesion:
-' - PontoEmbarqueController foca no cadastro de pontos.
-' - Rota centraliza a lógica de ordenação dos pontos.
+' - Cada gerador foca em um único formato de saída.
 '
 ' ATORES:
-' - Administrador: Cadastra novos pontos de embarque na rota
+' - Secretária: Gera comprovantes de pagamento em PDF ou Word

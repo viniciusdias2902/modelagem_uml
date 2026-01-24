@@ -1,69 +1,60 @@
 @startuml
 
-title Caso 04 - Iniciar Rota
+actor Aluno
 
-actor Motorista
-
-participant ":TelaControleRota" as TCR <<boundary>>
-participant ":RotaController" as RC <<controller>>
-participant ":Rota" as R <<entity>>
+participant ":TelaEnquete" as TE <<boundary>>
+participant ":EnqueteController" as EC <<controller>>
+participant ":Enquete" as E <<entity>>
 participant ":Aluno" as A <<entity>>
-participant ":ServicoNotificacao" as SN <<boundary>>
+participant ":RespostaEnquete" as RE <<entity>>
 
-Motorista -> TCR: acessarTelaControleRota()
-activate TCR
+Aluno -> TE: acessarTelaEnquete()
+activate TE
 
-TCR -> RC: carregarRota(data)
-activate RC
+TE -> TE: exibirEnquete()
 
-RC -> R: getStatus()
-activate R
-R --> RC: status
-deactivate R
+TE -> EC: carregarEnquete(data)
+activate EC
 
-RC --> TCR: rota
-deactivate RC
+EC -> E: getData()
+activate E
+E --> EC: data
+deactivate E
 
-TCR -> TCR: exibirRota()
-TCR -> TCR: exibirBotaoIniciar()
+EC -> E: isAtiva()
+activate E
+E --> EC: ativa
+deactivate E
 
-Motorista -> TCR: clicarIniciarRota()
+EC --> TE: enquete
+deactivate EC
 
-TCR -> RC: iniciarRota()
-activate RC
+TE -> TE: obterDataSelecionada()
+TE -> TE: obterOpcaoTrajeto()
 
-RC -> R: iniciar()
-activate R
-R --> RC: ok
-deactivate R
+TE -> EC: registrarResposta(aluno, data, opcao)
+activate EC
 
-RC -> R: getAlunos()
-activate R
-R --> RC: listaAlunos
-deactivate R
+EC -> A: getNome()
+activate A
+A --> EC: nome
+deactivate A
 
-RC -> RC: notificarAlunos()
+create RE
+EC -> RE: new(aluno, data, opcao)
+activate RE
+RE --> EC: resposta
+deactivate RE
 
-loop para cada aluno
-    RC -> SN: enviarNotificacao(aluno, mensagem)
-    activate SN
-    
-    SN -> A: receberNotificacao(mensagem)
-    activate A
-    A --> SN: ok
-    deactivate A
-    
-    SN --> RC: enviado
-    deactivate SN
-end
+EC -> EC: atualizarListaEmbarque()
 
-RC --> TCR: sucesso
-deactivate RC
+EC --> TE: sucesso
+deactivate EC
 
-TCR -> TCR: exibirConfirmacao()
+TE -> TE: exibirConfirmacao()
 
-TCR --> Motorista: confirmacao
-deactivate TCR
+TE --> Aluno: confirmacao
+deactivate TE
 
 @enduml
 
@@ -72,22 +63,21 @@ deactivate TCR
 ' ============================================
 '
 ' GRASP Controller:
-' - RotaController coordena o início da rota e
-'   orquestra a notificação dos alunos.
+' - EnqueteController coordena o carregamento da enquete
+'   e o registro da resposta do aluno.
 '
-' Observer (OBS):
-' - O padrão é evidenciado no loop de notificação.
-' - Quando a rota é iniciada, todos os alunos inscritos
-'   são notificados através do ServicoNotificacao.
-' - A Rota mantém a lista de alunos (observadores).
+' Information Expert (IE):
+' - Enquete conhece sua data e status de ativação.
+' - RespostaEnquete armazena a opção de trajeto do aluno.
+' - Aluno fornece seus próprios dados.
 '
 ' Low Coupling:
-' - RotaController usa ServicoNotificacao para notificar,
-'   não conhecendo detalhes de como a notificação é feita.
+' - TelaEnquete não manipula entidades diretamente,
+'   delegando toda lógica ao controller.
 '
 ' High Cohesion:
-' - ServicoNotificacao foca apenas em enviar notificações.
-' - Rota gerencia seu estado e lista de alunos.
+' - EnqueteController foca apenas no gerenciamento de enquetes.
+' - Cada entidade tem responsabilidade única e bem definida.
 '
 ' ATORES:
-' - Motorista: Inicia a rota para informar que a viagem começou
+' - Aluno: Responde a enquete informando seu trajeto do dia

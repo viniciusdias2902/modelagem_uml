@@ -1,75 +1,75 @@
 @startuml
 
-title Caso 10 - Exportar Dados Financeiros
-
 actor Secretaria as "Secretária"
 
 participant ":TelaFinanceira" as TF <<boundary>>
-participant ":ExportacaoController" as EC <<controller>>
-participant ":RegistroFinanceiro" as RF <<entity>>
+participant ":PagamentoController" as PC <<controller>>
 participant ":Aluno" as A <<entity>>
-participant ":GeradorPlanilha" as GP <<controller>>
+participant ":Pagamento" as P <<entity>>
+participant ":RegistroFinanceiro" as RF <<entity>>
 
 Secretaria -> TF: acessarTelaFinanceira()
 activate TF
 
-TF -> TF: exibirOpcaoExportar()
+TF -> PC: carregarAlunos()
+activate PC
 
-Secretaria -> TF: selecionarExportar()
-
-Secretaria -> TF: informarPeriodo()
-TF -> TF: obterPeriodo()
-
-TF -> EC: carregarDadosPeriodo(dataInicio, dataFim)
-activate EC
-
-loop para cada registro no período
-    EC -> RF: getValorPago()
-    activate RF
-    RF --> EC: valorPago
-    deactivate RF
-    
-    EC -> RF: getValorDevido()
-    activate RF
-    RF --> EC: valorDevido
-    deactivate RF
-    
-    EC -> RF: getStatus()
-    activate RF
-    RF --> EC: status
-    deactivate RF
-    
-    EC -> A: getNome()
+loop para cada aluno
+    PC -> A: getNome()
     activate A
-    A --> EC: nome
+    A --> PC: nome
     deactivate A
 end
 
-EC --> TF: dadosFiltrados
-deactivate EC
+PC --> TF: listaAlunos
+deactivate PC
 
-Secretaria -> TF: confirmarExportacao()
+TF -> TF: exibirListaAlunos()
 
-TF -> EC: exportar()
-activate EC
+Secretaria -> TF: selecionarAluno()
+TF -> TF: obterAlunoSelecionado()
 
-EC -> EC: gerarPlanilha(dados)
+Secretaria -> TF: informarPagamento()
+TF -> TF: obterValorPagamento()
+TF -> TF: obterDataPagamento()
 
-EC -> GP: criar(dados)
-activate GP
+TF -> PC: registrarPagamento(aluno, valor, data)
+activate PC
 
-GP -> GP: adicionarCabecalho()
-GP -> GP: adicionarLinhas(registros)
+create P
+PC -> P: new(valor, data)
+activate P
+P --> PC: pagamento
+deactivate P
 
-GP --> EC: arquivo
-deactivate GP
+PC -> A: getRegistroFinanceiro()
+activate A
+A --> PC: registroFinanceiro
+deactivate A
 
-EC --> TF: arquivo
-deactivate EC
+PC -> RF: adicionarPagamento(pagamento)
+activate RF
+RF --> PC: ok
+deactivate RF
 
-TF -> TF: disponibilizarDownload(arquivo)
+PC -> PC: atualizarSaldo(aluno)
 
-TF --> Secretaria: downloadDisponivel
+PC -> RF: calcularSaldo()
+activate RF
+RF --> PC: saldo
+deactivate RF
+
+PC -> RF: atualizarStatus()
+activate RF
+RF --> PC: ok
+deactivate RF
+
+PC --> TF: sucesso
+deactivate PC
+
+TF -> TF: exibirConfirmacao()
+
+TF --> Secretaria: confirmacao
 deactivate TF
 
 @enduml
@@ -79,21 +79,21 @@ deactivate TF
 ' ============================================
 '
 ' GRASP Controller:
-' - ExportacaoController coordena a coleta de dados
-'   por período e a geração da planilha.
+' - PagamentoController coordena o registro do pagamento
+'   e a atualização do saldo do aluno.
 '
 ' Information Expert (IE):
-' - RegistroFinanceiro fornece valores pagos, devidos e status.
-' - Aluno fornece seu nome para identificação.
-' - GeradorPlanilha sabe como estruturar a planilha.
+' - RegistroFinanceiro sabe adicionar pagamentos, calcular
+'   saldo e atualizar seu próprio status.
+' - Aluno conhece seu registro financeiro.
 '
 ' Low Coupling:
-' - TelaFinanceira não conhece a lógica de geração de planilha.
-' - ExportacaoController delega a criação ao GeradorPlanilha.
+' - TelaFinanceira não conhece a lógica de cálculo de saldo,
+'   delegando ao controller e às entidades.
 '
 ' High Cohesion:
-' - ExportacaoController foca em coordenar a exportação.
-' - GeradorPlanilha foca exclusivamente na criação do arquivo.
+' - PagamentoController foca em operações de pagamento.
+' - RegistroFinanceiro centraliza a lógica financeira.
 '
 ' ATORES:
-' - Secretária: Exporta dados financeiros em formato de planilha
+' - Secretária: Registra pagamentos realizados pelos alunos

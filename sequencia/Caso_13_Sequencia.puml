@@ -1,0 +1,85 @@
+@startuml
+
+actor Administrador
+
+participant ":TelaGestaoPontos" as TGP <<boundary>>
+participant ":PontoEmbarqueController" as PEC <<controller>>
+participant ":PontoEmbarque" as PE <<entity>>
+participant ":Rota" as R <<entity>>
+
+Administrador -> TGP: acessarTelaGestaoPontos()
+activate TGP
+
+TGP -> TGP: exibirFormulario()
+
+Administrador -> TGP: preencherDados()
+TGP -> TGP: obterNome()
+TGP -> TGP: obterReferencia()
+TGP -> TGP: obterOrdem()
+
+Administrador -> TGP: confirmarCadastro()
+
+TGP -> PEC: cadastrarPonto(nome, referencia, ordem)
+activate PEC
+
+PEC -> PEC: validarDados(nome, referencia, ordem)
+
+create PE
+PEC -> PE: new(nome, referencia, ordem)
+activate PE
+PE --> PEC: pontoEmbarque
+deactivate PE
+
+PEC -> R: adicionarPonto(pontoEmbarque)
+activate R
+R --> PEC: ok
+deactivate R
+
+PEC -> PEC: atualizarOrdemRota()
+
+PEC -> R: reordenarPontos()
+activate R
+
+loop para cada ponto
+    R -> PE: setOrdem(novaOrdem)
+    activate PE
+    PE --> R: ok
+    deactivate PE
+end
+
+R --> PEC: ok
+deactivate R
+
+PEC --> TGP: sucesso
+deactivate PEC
+
+TGP -> TGP: exibirConfirmacao()
+
+TGP --> Administrador: confirmacao
+deactivate TGP
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
+' ============================================
+'
+' GRASP Controller:
+' - PontoEmbarqueController coordena a validação,
+'   criação do ponto e atualização da rota.
+'
+' Information Expert (IE):
+' - PontoEmbarque conhece seus dados (nome, referência, ordem).
+' - Rota sabe como adicionar pontos e reordená-los,
+'   pois mantém a lista de pontos.
+'
+' Low Coupling:
+' - TelaGestaoPontos não conhece a lógica de ordenação,
+'   delegando ao controller e à entidade Rota.
+'
+' High Cohesion:
+' - PontoEmbarqueController foca no cadastro de pontos.
+' - Rota centraliza a lógica de ordenação dos pontos.
+'
+' ATORES:
+' - Administrador: Cadastra novos pontos de embarque na rota

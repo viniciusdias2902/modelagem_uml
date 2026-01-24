@@ -1,50 +1,46 @@
 @startuml
 
-title Caso 02 - Realizar Login
-
 actor Aluno
-actor Motorista
-actor Secretaria as "Secretária"
+participant ":TelaAutoCadastro" as TC <<boundary>>
+participant ":AutoCadastroController" as ACC <<controller>>
+participant ":AlunoRepository" as AR <<repository>>
+participant ":Aluno" as A <<entity>>
 
-participant ":TelaLogin" as TL <<boundary>>
-participant ":AutenticacaoController" as AC <<controller>>
-participant ":Usuario" as U <<entity>>
-participant ":Sessao" as S <<entity>>
+== Realizar Cadastro ==
 
-Aluno -> TL: acessarTelaLogin()
-activate TL
+Aluno -> TC: acessarTela()
+activate TC
 
-TL -> TL: exibirFormulario()
-TL -> TL: obterCredenciais()
+TC -> TC: exibirFormulario()
+TC --> Aluno: formulário
 
-TL -> AC: autenticar(email, senha)
-activate AC
+Aluno -> TC: preencherDados(nome, email, senha)
+TC -> TC: obterDados()
 
-AC -> U: getEmail()
-activate U
-U --> AC: email
-deactivate U
+TC -> ACC: realizarCadastro(dados)
+activate ACC
 
-AC -> U: getSenha()
-activate U
-U --> AC: senha
-deactivate U
+ACC -> ACC: validarDados(dados)
 
-AC -> AC: validarCredenciais(email, senha)
+ACC -> AR: findByEmail(email)
+activate AR
+AR --> ACC: null
+deactivate AR
 
-create S
-AC -> S: criarSessao(usuario)
-activate S
-S --> AC: sessao
-deactivate S
+create A
+ACC -> A: new(nome, email, senha)
 
-AC --> TL: usuario
-deactivate AC
+ACC -> AR: save(aluno)
+activate AR
+AR --> ACC: alunoSalvo
+deactivate AR
 
-TL -> TL: redirecionarTelaInicial(perfil)
+ACC --> TC: sucesso
+deactivate ACC
 
-TL --> Aluno: telaInicial
-deactivate TL
+TC -> TC: exibirMensagemSucesso()
+TC --> Aluno: "Cadastro realizado com sucesso"
+deactivate TC
 
 @enduml
 
@@ -53,21 +49,20 @@ deactivate TL
 ' ============================================
 '
 ' GRASP Controller:
-' - AutenticacaoController recebe a requisição de login
-'   e coordena a validação e criação de sessão.
+' - AutoCadastroController recebe a requisição da boundary
+'   e coordena o fluxo de auto-cadastro.
 '
-' Information Expert (IE):
-' - Usuario fornece suas próprias credenciais para validação.
-' - Sessao gerencia seu próprio estado de ativação.
+' Information Expert:
+' - Aluno é criado com seus próprios dados.
 '
 ' Low Coupling:
-' - TelaLogin não acessa entidades diretamente,
+' - TelaAutoCadastro não conhece a entidade diretamente,
 '   toda comunicação passa pelo controller.
 '
 ' High Cohesion:
-' - AutenticacaoController foca apenas em autenticação.
-' - Sessao foca apenas em gerenciar estado de login.
+' - AutoCadastroController foca apenas no cadastro de alunos.
 '
-' ATORES:
-' - Aluno, Motorista, Secretária: Todos podem realizar login
-'   para acessar funcionalidades do seu perfil
+' SEM FACTORY:
+' - Diferente do UC01 (Cadastrar Usuário), aqui não há
+'   variação de tipos. O auto-cadastro sempre cria um Aluno,
+'   portanto não há necessidade do padrão Factory.

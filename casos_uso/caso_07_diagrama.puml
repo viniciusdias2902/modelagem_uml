@@ -1,15 +1,10 @@
 @startuml
 left to right direction
 
-actor Secretaria as "Secretária"
+actor Motorista
 
-usecase "Visualizar Tabela Financeira" as UC7
-usecase "Consultar Pagamentos Realizados" as UC7a
-usecase "Consultar Pagamentos Pendentes" as UC7b
+usecase "Informar Próximo Ponto" as UC06
 
-UC7 ..> UC7a : <<include>>
-UC7 ..> UC7b : <<include>>
-
-Secretaria --> UC7
+Motorista --> UC06
 
 @enduml

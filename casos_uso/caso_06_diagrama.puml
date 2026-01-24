@@ -1,15 +1,11 @@
 @startuml
 left to right direction
 
-actor Aluno
+actor Motorista
 
-usecase "Visualizar Rota" as UC6
-usecase "Exibir Pontos de Embarque" as UC6a
-usecase "Exibir Ordem dos Pontos" as UC6b
+usecase "Atualizar Ponto Atual" as UC05
 
-UC6 ..> UC6a : <<include>>
-UC6 ..> UC6b : <<include>>
 
-Aluno --> UC6
+Motorista --> UC05
 
 @enduml

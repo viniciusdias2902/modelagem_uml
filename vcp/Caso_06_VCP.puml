@@ -1,47 +1,113 @@
 @startuml
 left to right direction
 
-class TelaVisualizacaoRota <<boundary>> {
-    +exibirRota()
-    +exibirListaPontos()
-    +destacarPontoAluno()
+' ==========================================
+' PADRÃO OBSERVER
+' ==========================================
+
+interface Subject <<interface>> {
+    +attach(observer: Observer)
+    +detach(observer: Observer)
+    +notify(evento: EventoPosicao)
 }
 
-class VisualizacaoRotaController <<controller>> {
-    +carregarRota()
-    +carregarPontos()
-    +identificarPontoAluno(aluno)
+interface Observer <<interface>> {
+    +update(evento: EventoPosicao)
+}
+
+class EventoPosicao {
+    -rota: Rota
+    -pontoAtual: PontoEmbarque
+    -timestamp: DateTime
+    +getRota(): Rota
+    +getPontoAtual(): PontoEmbarque
+}
+
+class NotificacaoAlunoObserver {
+    +update(evento: EventoPosicao)
+}
+
+' ==========================================
+' ECB
+' ==========================================
+
+class TelaControleRota <<boundary>> {
+    +exibirListaPontos(pontos: List)
+    +obterPontoSelecionado(): PontoEmbarque
+    +exibirPontoAtual(ponto: PontoEmbarque)
+    +exibirConfirmacao(mensagem: String)
+}
+
+class ServicoNotificacao <<boundary>> {
+    +enviarNotificacao(destinatario: String, titulo: String, mensagem: String)
+}
+
+class PontoAtualController <<controller>> {
+    -observers: List<Observer>
+    +attach(observer: Observer)
+    +detach(observer: Observer)
+    +notify(evento: EventoPosicao)
+    +carregarPontosRota(rota: Rota): List
+    +atualizarPontoAtual(rota: Rota, ponto: PontoEmbarque)
 }
 
 class Rota <<entity>> {
-    -pontos: List<PontoEmbarque>
+    -id: UUID
+    -nome: String
     -pontoAtual: PontoEmbarque
-    +getPontos()
-    +getPontoAtual()
+    -status: StatusRota
+    +getPontoAtual(): PontoEmbarque
+    +setPontoAtual(ponto: PontoEmbarque)
+    +getAlunos(): List<Aluno>
+    +getPontos(): List<PontoEmbarque>
 }
 
 class PontoEmbarque <<entity>> {
+    -id: UUID
     -nome: String
-    -referencia: String
+    -endereco: String
     -ordem: Integer
-    +getNome()
-    +getReferencia()
-    +getOrdem()
+    +getNome(): String
+    +getOrdem(): Integer
 }
 
 class Aluno <<entity>> {
+    -id: UUID
     -nome: String
     -email: String
     -pontoEmbarque: PontoEmbarque
-    +getNome()
-    +getPontoEmbarque()
+    +getEmail(): String
+    +getPontoEmbarque(): PontoEmbarque
 }
 
-TelaVisualizacaoRota --> VisualizacaoRotaController
-VisualizacaoRotaController --> Rota
-VisualizacaoRotaController --> Aluno
-Rota --> PontoEmbarque
-Aluno --> PontoEmbarque
+enum StatusRota <<entity>> {
+    NAO_INICIADA
+    EM_ANDAMENTO
+    FINALIZADA
+}
+
+' ==========================================
+' RELACIONAMENTOS
+' ==========================================
+
+PontoAtualController ..|> Subject
+NotificacaoAlunoObserver ..|> Observer
+
+TelaControleRota --> PontoAtualController
+PontoAtualController o--> "0..*" Observer : observers
+PontoAtualController --> Rota
+PontoAtualController --> PontoEmbarque
+
+NotificacaoAlunoObserver --> ServicoNotificacao
+NotificacaoAlunoObserver --> Aluno
+Observer ..> EventoPosicao
+
+Rota --> "0..*" PontoEmbarque
+Rota --> "0..*" Aluno
+Rota --> StatusRota
+Rota --> PontoEmbarque : pontoAtual
+EventoPosicao --> Rota
+EventoPosicao --> PontoEmbarque
 
 @enduml
 
@@ -51,18 +117,26 @@ Aluno --> PontoEmbarque
 '
 ' PADRÕES DE ANÁLISE:
 ' - BCE (Boundary-Controller-Entity): Separação entre
-'   interface (TelaVisualizacaoRota), lógica
-'   (VisualizacaoRotaController) e dados (Rota, PontoEmbarque, Aluno).
-' - GRASP Controller: VisualizacaoRotaController coordena
-'   o carregamento e organização dos dados para exibição.
-' - Information Expert: Rota conhece seus pontos ordenados,
-'   Aluno conhece seu ponto de embarque.
+'   interfaces (TelaControleRota, ServicoNotificacao),
+'   lógica (PontoAtualController) e dados (Rota,
+'   PontoEmbarque, Aluno).
+' - GRASP Controller: PontoAtualController coordena o
+'   fluxo de atualização do ponto atual.
+' - Information Expert: Rota conhece seus pontos e alunos,
+'   sendo responsável por fornecer essas informações.
 '
 ' PADRÕES DE PROJETO:
-' - Nenhum padrão de projeto foi necessário. Este caso de
-'   uso é uma consulta simples de dados existentes sem
-'   lógica complexa de criação ou comportamento variável.
+' - Observer (GoF): Implementado para notificar os alunos
+'   quando o ponto atual da rota é atualizado.
+'   - Subject: interface com attach/detach/notify
+'   - Observer: interface com update(evento)
+'   - ConcreteSubject: PontoAtualController mantém lista
+'     de observers e dispara notify() após atualizar ponto
+'   - ConcreteObserver: NotificacaoAlunoObserver reage ao
+'     evento e usa ServicoNotificacao (boundary) para
+'     notificar cada aluno da rota
 '
 ' JUSTIFICATIVA:
-' O fluxo é de leitura e exibição de dados, não havendo
-' necessidade de padrões adicionais além do BCE básico.
+' O Observer é adequado pois múltiplos alunos precisam ser
+' notificados quando a posição do transporte muda, sem que
+' o controller precise conhecer cada aluno individualmente.

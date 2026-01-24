@@ -2,16 +2,10 @@
 left to right direction
 
 actor Motorista
-actor Aluno
 
-usecase "Atualizar Ponto Atual" as UC5
-usecase "Informar Próximo Ponto" as UC5a
-usecase "Calcular Distância" as UC5b
+usecase "Iniciar Rota" as UC4
 
-UC5 ..> UC5a : <<include>>
-UC5 ..> UC5b : <<include>>
 
-Motorista --> UC5
-UC5b --> Aluno
+Motorista --> UC4
 
 @enduml

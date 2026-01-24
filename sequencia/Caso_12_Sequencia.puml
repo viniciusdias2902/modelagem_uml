@@ -1,146 +1,75 @@
 @startuml
 
-title Caso 12 - Solicitar Troca de Ponto de Embarque
+actor Secretaria as "Secretária"
 
-actor Aluno
-actor Motorista
-
-participant ":TelaSolicitacoes" as TS <<boundary>>
-participant ":TelaAnaliseSolicitacao" as TAS <<boundary>>
-participant ":SolicitacaoController" as SC <<controller>>
+participant ":TelaFinanceira" as TF <<boundary>>
+participant ":ExportacaoController" as EC <<controller>>
+participant ":RegistroFinanceiro" as RF <<entity>>
 participant ":Aluno" as A <<entity>>
-participant ":Solicitacao" as S <<entity>>
-participant ":PontoEmbarque" as PE <<entity>>
-participant ":Motorista" as M <<entity>>
-participant ":ServicoNotificacao" as SN <<boundary>>
+participant ":GeradorPlanilha" as GP <<controller>>
 
-== Fluxo do Aluno: Criar Solicitação ==
+Secretaria -> TF: acessarTelaFinanceira()
+activate TF
 
-Aluno -> TS: acessarTelaSolicitacoes()
-activate TS
+TF -> TF: exibirOpcaoExportar()
 
-TS -> SC: carregarPontosDisponiveis()
-activate SC
+Secretaria -> TF: selecionarExportar()
 
-loop para cada ponto
-    SC -> PE: getNome()
-    activate PE
-    PE --> SC: nome
-    deactivate PE
-end
+Secretaria -> TF: informarPeriodo()
+TF -> TF: obterPeriodo()
 
-SC --> TS: listaPontos
-deactivate SC
+TF -> EC: carregarDadosPeriodo(dataInicio, dataFim)
+activate EC
 
-TS -> TS: exibirPontosDisponiveis()
-
-Aluno -> TS: selecionarNovoPonto()
-TS -> TS: obterPontoSelecionado()
-
-Aluno -> TS: informarJustificativa()
-TS -> TS: obterJustificativa()
-
-Aluno -> TS: confirmarSolicitacao()
-
-TS -> SC: criarSolicitacao(aluno, novoPonto, justificativa)
-activate SC
-
-SC -> A: getPontoEmbarque()
-activate A
-A --> SC: pontoAtual
-deactivate A
-
-create S
-SC -> S: new(aluno, pontoAtual, novoPonto, justificativa)
-activate S
-S --> SC: solicitacao
-deactivate S
-
-SC -> SC: notificarMotorista(solicitacao)
-
-SC -> SN: notificar(motorista, mensagem)
-activate SN
-
-SN -> M: receberNotificacao(mensagem)
-activate M
-M --> SN: ok
-deactivate M
-
-SN --> SC: enviado
-deactivate SN
-
-SC --> TS: sucesso
-deactivate SC
-
-TS -> TS: exibirConfirmacao()
-
-TS --> Aluno: confirmacao
-deactivate TS
-
-== Fluxo do Motorista: Analisar Solicitação ==
-
-Motorista -> TAS: acessarTelaAnaliseSolicitacao()
-activate TAS
-
-TAS -> SC: carregarSolicitacoesPendentes()
-activate SC
-
-loop para cada solicitação
-    SC -> S: getStatus()
-    activate S
-    S --> SC: status
-    deactivate S
-end
-
-SC --> TAS: listaSolicitacoes
-deactivate SC
-
-TAS -> TAS: exibirListaSolicitacoes()
-
-Motorista -> TAS: selecionarSolicitacao()
-TAS -> TAS: exibirDetalhesSolicitacao()
-
-Motorista -> TAS: tomarDecisao()
-TAS -> TAS: obterDecisao()
-
-TAS -> SC: processarDecisao(solicitacao, decisao)
-activate SC
-
-alt decisao == "aprovar"
-    SC -> S: aprovar()
-    activate S
-    S --> SC: ok
-    deactivate S
+loop para cada registro no período
+    EC -> RF: getValorPago()
+    activate RF
+    RF --> EC: valorPago
+    deactivate RF
     
-    SC -> A: setPontoEmbarque(novoPonto)
+    EC -> RF: getValorDevido()
+    activate RF
+    RF --> EC: valorDevido
+    deactivate RF
+    
+    EC -> RF: getStatus()
+    activate RF
+    RF --> EC: status
+    deactivate RF
+    
+    EC -> A: getNome()
     activate A
-    A --> SC: ok
+    A --> EC: nome
     deactivate A
-else decisao == "rejeitar"
-    SC -> S: rejeitar()
-    activate S
-    S --> SC: ok
-    deactivate S
 end
 
-SC -> SC: notificarAluno(solicitacao, decisao)
+EC --> TF: dadosFiltrados
+deactivate EC
 
-SC -> SN: notificar(aluno, mensagem)
-activate SN
+Secretaria -> TF: confirmarExportacao()
 
-SN -> A: receberNotificacao(mensagem)
-activate A
-A --> SN: ok
-deactivate A
+TF -> EC: exportar()
+activate EC
 
-SN --> SC: enviado
-deactivate SN
+EC -> EC: gerarPlanilha(dados)
 
-SC --> TAS: sucesso
-deactivate SC
+EC -> GP: criar(dados)
+activate GP
 
-TAS --> Motorista: confirmacao
-deactivate TAS
+GP -> GP: adicionarCabecalho()
+GP -> GP: adicionarLinhas(registros)
+
+GP --> EC: arquivo
+deactivate GP
+
+EC --> TF: arquivo
+deactivate EC
+
+TF -> TF: disponibilizarDownload(arquivo)
+
+TF --> Secretaria: downloadDisponivel
+deactivate TF
+
 
 @enduml
 
@@ -149,28 +78,21 @@ deactivate TAS
 ' ============================================
 '
 ' GRASP Controller:
-' - SolicitacaoController coordena todo o fluxo:
-'   criação da solicitação, notificação do motorista,
-'   processamento da decisão e notificação do aluno.
-'
-' Observer (OBS):
-' - O padrão é aplicado em dois momentos:
-'   1. Quando a solicitação é criada, o motorista é notificado.
-'   2. Quando a decisão é tomada, o aluno é notificado.
-' - ServicoNotificacao centraliza e desacopla a notificação.
+' - ExportacaoController coordena a coleta de dados
+'   por período e a geração da planilha.
 '
 ' Information Expert (IE):
-' - Solicitacao gerencia seu status e transições (aprovar/rejeitar).
-' - Aluno conhece e atualiza seu ponto de embarque.
+' - RegistroFinanceiro fornece valores pagos, devidos e status.
+' - Aluno fornece seu nome para identificação.
+' - GeradorPlanilha sabe como estruturar a planilha.
 '
 ' Low Coupling:
-' - As telas não conhecem detalhes das entidades.
-' - Controller usa ServicoNotificacao sem conhecer implementação.
+' - TelaFinanceira não conhece a lógica de geração de planilha.
+' - ExportacaoController delega a criação ao GeradorPlanilha.
 '
 ' High Cohesion:
-' - SolicitacaoController foca apenas em solicitações.
-' - ServicoNotificacao foca apenas em enviar notificações.
+' - ExportacaoController foca em coordenar a exportação.
+' - GeradorPlanilha foca exclusivamente na criação do arquivo.
 '
 ' ATORES:
-' - Aluno: Solicita troca de ponto de embarque
-' - Motorista: Analisa e decide sobre a solicitação
+' - Secretária: Exporta dados financeiros em formato de planilha

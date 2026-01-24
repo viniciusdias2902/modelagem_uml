@@ -2,11 +2,10 @@
 left to right direction
 
 actor Administrador
-actor Aluno
 
-usecase "Cadastrar Usuário" as UC1
 
-Administrador --> UC1
-Aluno --> UC1
+usecase "Cadastrar Usuário" as UC01
+
+Administrador --> UC01
 
 @enduml

@@ -1,15 +1,15 @@
 @startuml
 left to right direction
 
-actor Administrador
+actor Secretaria as "Secretária"
 
-usecase "Cadastrar Ponto de Embarque" as UC11
-usecase "Informar Nome e Referência" as UC11a
-usecase "Definir Ordem na Rota" as UC11b
+usecase "Gerar Comprovante" as UC9
+usecase "Exportar como PDF" as UC9a
+usecase "Exportar como Word" as UC9b
 
-UC11 ..> UC11a : <<include>>
-UC11 ..> UC11b : <<include>>
+UC9 <.. UC9a : <<extend>>
+UC9 <.. UC9b : <<extend>>
 
-Administrador --> UC11
+Secretaria --> UC9
 
 @enduml

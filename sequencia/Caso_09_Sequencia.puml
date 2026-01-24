@@ -1,98 +1,80 @@
 @startuml
 
-title Caso 09 - Gerar Comprovante
-
 actor Secretaria as "Secretária"
 
 participant ":TelaFinanceira" as TF <<boundary>>
-participant ":ComprovanteController" as CC <<controller>>
-participant ":Pagamento" as P <<entity>>
+participant ":FinanceiroController" as FC <<controller>>
+participant ":RegistroFinanceiro" as RF <<entity>>
 participant ":Aluno" as A <<entity>>
-participant ":GeradorComprovante" as GC <<controller>>
-participant ":Comprovante" as C <<entity>>
+participant ":Pagamento" as P <<entity>>
 
 Secretaria -> TF: acessarTelaFinanceira()
 activate TF
 
-TF -> TF: exibirListaAlunos()
+TF -> FC: carregarDadosFinanceiros()
+activate FC
 
-Secretaria -> TF: selecionarAluno()
-TF -> TF: obterAlunoSelecionado()
+loop para cada registro
+    FC -> RF: getValorPago()
+    activate RF
+    RF --> FC: valorPago
+    deactivate RF
+    
+    FC -> RF: getValorDevido()
+    activate RF
+    RF --> FC: valorDevido
+    deactivate RF
+    
+    FC -> RF: getStatus()
+    activate RF
+    RF --> FC: status
+    deactivate RF
+    
+    FC -> A: getNome()
+    activate A
+    A --> FC: nome
+    deactivate A
+end
 
-TF -> CC: carregarPagamentos(aluno)
-activate CC
+FC --> TF: dadosFinanceiros
+deactivate FC
 
-loop para cada pagamento
-    CC -> P: getValor()
+TF -> TF: exibirTabelaFinanceira()
+
+TF -> FC: filtrarPagamentosRealizados()
+activate FC
+
+loop para cada pagamento realizado
+    FC -> P: getValor()
     activate P
-    P --> CC: valor
+    P --> FC: valor
     deactivate P
     
-    CC -> P: getData()
+    FC -> P: getStatus()
     activate P
-    P --> CC: data
+    P --> FC: status
     deactivate P
 end
 
-CC --> TF: listaPagamentos
-deactivate CC
+FC --> TF: pagamentosRealizados
+deactivate FC
 
-TF -> TF: exibirPagamentos(aluno)
+TF -> TF: exibirPagamentosRealizados()
 
-Secretaria -> TF: selecionarPagamento()
-TF -> TF: obterPagamentoSelecionado()
+TF -> FC: filtrarPagamentosPendentes()
+activate FC
 
-Secretaria -> TF: escolherFormato()
-TF -> TF: obterFormatoEscolhido()
+FC -> RF: calcularSaldo()
+activate RF
+RF --> FC: saldo
+deactivate RF
 
-TF -> CC: gerarComprovante(pagamento, formato)
-activate CC
+FC --> TF: pagamentosPendentes
+deactivate FC
 
-CC -> CC: obterGeradorFormato(formato)
+TF -> TF: exibirPagamentosPendentes()
 
-CC -> P: getValor()
-activate P
-P --> CC: valor
-deactivate P
-
-CC -> P: getData()
-activate P
-P --> CC: data
-deactivate P
-
-CC -> P: getAluno()
-activate P
-P --> CC: aluno
-deactivate P
-
-CC -> A: getNome()
-activate A
-A --> CC: nome
-deactivate A
-
-CC -> GC: gerar(pagamento)
-activate GC
-
-create C
-GC -> C: new(pagamento, formato)
-activate C
-C --> GC: comprovante
-deactivate C
-
-GC -> C: getConteudo()
-activate C
-C --> GC: conteudo
-deactivate C
-
-GC --> CC: arquivo
-deactivate GC
-
-CC --> TF: arquivo
-deactivate CC
-
-TF -> TF: disponibilizarDownload(arquivo)
-
-TF --> Secretaria: downloadDisponivel
+TF --> Secretaria: tabelaExibida
 deactivate TF
 
 @enduml
@@ -102,26 +84,22 @@ deactivate TF
 ' ============================================
 '
 ' GRASP Controller:
-' - ComprovanteController coordena o carregamento de
-'   pagamentos e a geração do comprovante.
-'
-' Strategy (STR):
-' - O padrão é evidenciado na chamada obterGeradorFormato().
-' - GeradorComprovante é a interface que define o contrato.
-' - GeradorPDF ou GeradorWord são selecionados em runtime
-'   conforme o formato escolhido pelo usuário.
-' - Permite adicionar novos formatos sem modificar o controller.
+' - FinanceiroController coordena o carregamento e
+'   filtragem dos dados financeiros.
 '
 ' Information Expert (IE):
-' - Pagamento fornece seus dados (valor, data, aluno).
-' - Comprovante conhece seu próprio conteúdo.
+' - RegistroFinanceiro conhece valores pagos/devidos e
+'   sabe calcular o saldo.
+' - Pagamento conhece seu valor e status.
+' - Aluno fornece seus dados para identificação.
 '
 ' Low Coupling:
-' - ComprovanteController não conhece implementações específicas,
-'   trabalha apenas com a interface GeradorComprovante.
+' - TelaFinanceira não manipula entidades diretamente,
+'   delegando ao controller.
 '
 ' High Cohesion:
-' - Cada gerador foca em um único formato de saída.
+' - FinanceiroController foca em operações financeiras.
+' - RegistroFinanceiro centraliza cálculos de saldo.
 '
 ' ATORES:
-' - Secretária: Gera comprovantes de pagamento em PDF ou Word
+' - Secretária: Visualiza a situação financeira dos alunos

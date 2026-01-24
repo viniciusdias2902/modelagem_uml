@@ -1,56 +1,57 @@
 @startuml
 left to right direction
 
-class TelaFinanceira <<boundary>> {
-    +exibirTabelaFinanceira()
-    +exibirPagamentosRealizados()
-    +exibirPagamentosPendentes()
+' ==========================================
+' ECB
+' ==========================================
+
+class TelaControleRota <<boundary>> {
+    +exibirPontoAtual(ponto: PontoEmbarque)
+    +exibirProximoPonto(ponto: PontoEmbarque)
+    +exibirMensagemUltimoPonto()
+    +exibirErro(mensagem: String)
 }
 
-class FinanceiroController <<controller>> {
-    +carregarDadosFinanceiros()
-    +filtrarPagamentosRealizados()
-    +filtrarPagamentosPendentes()
+class ProximoPontoController <<controller>> {
+    +consultarProximoPonto(rota: Rota): PontoEmbarque
 }
 
-class Secretaria <<entity>> {
+class Rota <<entity>> {
+    -id: UUID
     -nome: String
-    -email: String
-    +getNome()
-    +getEmail()
+    -pontoAtual: PontoEmbarque
+    -pontos: List<PontoEmbarque>
+    -status: StatusRota
+    +getPontoAtual(): PontoEmbarque
+    +getPontos(): List<PontoEmbarque>
+    +calcularProximoPonto(): PontoEmbarque
 }
 
-class RegistroFinanceiro <<entity>> {
-    -valorPago: Decimal
-    -valorDevido: Decimal
-    -status: String
-    +getValorPago()
-    +getValorDevido()
-    +getStatus()
-    +calcularSaldo()
-}
-
-class Aluno <<entity>> {
+class PontoEmbarque <<entity>> {
+    -id: UUID
     -nome: String
-    -email: String
-    +getNome()
-    +getEmail()
+    -endereco: String
+    -ordem: Integer
+    +getNome(): String
+    +getOrdem(): Integer
 }
 
-class Pagamento <<entity>> {
-    -valor: Decimal
-    -data: Date
-    -status: String
-    +getValor()
-    +getData()
-    +getStatus()
+enum StatusRota <<entity>> {
+    NAO_INICIADA
+    EM_ANDAMENTO
+    FINALIZADA
 }
 
-TelaFinanceira --> FinanceiroController
-FinanceiroController --> Secretaria
-FinanceiroController --> RegistroFinanceiro
-RegistroFinanceiro --> Aluno
-RegistroFinanceiro --> Pagamento
+' ==========================================
+' RELACIONAMENTOS
+' ==========================================
+
+TelaControleRota --> ProximoPontoController
+ProximoPontoController --> Rota
+
+Rota --> "0..*" PontoEmbarque
+Rota --> PontoEmbarque : pontoAtual
+Rota --> StatusRota
 
 @enduml
 
@@ -60,18 +61,22 @@ RegistroFinanceiro --> Pagamento
 '
 ' PADRÕES DE ANÁLISE:
 ' - BCE (Boundary-Controller-Entity): Separação entre
-'   interface (TelaFinanceira), lógica (FinanceiroController)
-'   e dados (Secretaria, RegistroFinanceiro, Aluno, Pagamento).
-' - GRASP Controller: FinanceiroController coordena o
-'   carregamento e filtragem dos dados financeiros.
-' - Information Expert: RegistroFinanceiro calcula o saldo
-'   e status do aluno com base nos pagamentos.
+'   interface (TelaControleRota), lógica (ProximoPontoController)
+'   e dados (Rota, PontoEmbarque).
+' - GRASP Controller: ProximoPontoController coordena a
+'   consulta do próximo ponto.
+' - Information Expert: Rota é responsável por calcular
+'   o próximo ponto pois conhece seus pontos e suas ordens.
 '
 ' PADRÕES DE PROJETO:
-' - Nenhum padrão de projeto foi necessário. O caso de uso
-'   consiste em consulta e exibição de dados financeiros
-'   sem lógica complexa.
+' - Nenhum padrão de projeto é necessário neste caso.
+'   O caso de uso é uma simples consulta sem necessidade
+'   de notificação ou criação complexa de objetos.
 '
 ' JUSTIFICATIVA:
-' O fluxo é de leitura e apresentação de dados agregados.
-' A estrutura BCE organiza adequadamente as responsabilidades.
+' O método calcularProximoPonto() está em Rota (Information
+' Expert) pois ela possui todas as informações necessárias:
+' - Lista de pontos ordenados
+' - Ponto atual
+' O cálculo é simples: encontrar o ponto com ordem
+' imediatamente superior ao ponto atual.

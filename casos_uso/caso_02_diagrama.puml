@@ -2,16 +2,10 @@
 left to right direction
 
 actor Aluno
-actor Motorista
-actor Secretaria as "Secretária"
 
-usecase "Realizar Login" as UC2
-usecase "Validar Credenciais" as UC2a
+usecase "Realizar Cadastro" as UC02
 
-UC2 ..> UC2a : <<include>>
 
-Aluno --> UC2
-Motorista --> UC2
-Secretaria --> UC2
+Aluno --> UC02
 
 @enduml

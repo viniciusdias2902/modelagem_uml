@@ -1,0 +1,12 @@
+@startuml UC1_SolicitarTrocaPonto
+
+left to right direction
+
+actor Aluno
+
+usecase "Solicitar Troca de\nPonto de Embarque" as UC1
+
+Aluno --> UC1
+
+
+@enduml

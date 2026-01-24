@@ -1,15 +1,10 @@
 @startuml
 left to right direction
 
-actor Aluno
+actor Usuario as "Usuário"
 
-usecase "Responder Enquete" as UC3
-usecase "Selecionar Data" as UC3a
-usecase "Informar Trajeto" as UC3b
+usecase "Realizar Login" as UC2
 
-UC3 ..> UC3a : <<include>>
-UC3 ..> UC3b : <<include>>
-
-Aluno --> UC3
+Usuario --> UC2
 
 @enduml

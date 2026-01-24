@@ -2,21 +2,17 @@
 left to right direction
 
 class TelaFinanceira <<boundary>> {
-    +exibirOpcaoExportar()
-    +obterPeriodo()
-    +disponibilizarDownload(arquivo)
+    +exibirListaAlunos()
+    +obterAlunoSelecionado()
+    +obterValorPagamento()
+    +obterDataPagamento()
+    +exibirConfirmacao()
 }
 
-class ExportacaoController <<controller>> {
-    +carregarDadosPeriodo(dataInicio, dataFim)
-    +gerarPlanilha(dados)
-    +exportar()
-}
-
-class GeradorPlanilha <<controller>> {
-    +criar(dados): Arquivo
-    +adicionarCabecalho()
-    +adicionarLinhas(registros)
+class PagamentoController <<controller>> {
+    +carregarAlunos()
+    +registrarPagamento(aluno, valor, data)
+    +atualizarSaldo(aluno)
 }
 
 class Secretaria <<entity>> {
@@ -30,22 +26,32 @@ class RegistroFinanceiro <<entity>> {
     -valorPago: Decimal
     -valorDevido: Decimal
     -status: String
-    +getValorPago()
-    +getValorDevido()
-    +getStatus()
+    +adicionarPagamento(pagamento)
+    +atualizarStatus()
+    +calcularSaldo()
+}
+
+class Pagamento <<entity>> {
+    -valor: Decimal
+    -data: Date
+    -status: String
+    +getValor()
+    +getData()
 }
 
 class Aluno <<entity>> {
     -nome: String
     -email: String
     +getNome()
+    +getRegistroFinanceiro()
 }
 
-TelaFinanceira --> ExportacaoController
-ExportacaoController --> Secretaria
-ExportacaoController --> GeradorPlanilha
-ExportacaoController --> RegistroFinanceiro
-RegistroFinanceiro --> Aluno
+TelaFinanceira --> PagamentoController
+PagamentoController --> Secretaria
+PagamentoController --> Aluno
+PagamentoController --> Pagamento
+Aluno --> RegistroFinanceiro
+RegistroFinanceiro --> Pagamento
 
 @enduml
 
@@ -55,19 +61,19 @@ RegistroFinanceiro --> Aluno
 '
 ' PADRÕES DE ANÁLISE:
 ' - BCE (Boundary-Controller-Entity): Separação entre
-'   interface (TelaFinanceira), lógica (ExportacaoController,
-'   GeradorPlanilha) e dados (Secretaria, RegistroFinanceiro, Aluno).
-' - GRASP Controller: ExportacaoController coordena a
-'   coleta de dados e geração da planilha.
-' - Information Expert: RegistroFinanceiro fornece os
-'   dados financeiros de cada aluno.
+'   interface (TelaFinanceira), lógica (PagamentoController)
+'   e dados (Secretaria, Pagamento, RegistroFinanceiro, Aluno).
+' - GRASP Controller: PagamentoController coordena o
+'   registro do pagamento e atualização do saldo.
+' - Information Expert: RegistroFinanceiro sabe como
+'   atualizar o saldo e status ao receber um pagamento.
 '
 ' PADRÕES DE PROJETO:
-' - Nenhum padrão de projeto adicional foi necessário.
-'   A exportação é para um único formato (planilha),
-'   não havendo variação que justifique Strategy.
+' - Nenhum padrão de projeto foi necessário. O registro
+'   de pagamento é um processo direto sem variações
+'   comportamentais ou criação complexa.
 '
 ' JUSTIFICATIVA:
-' O fluxo é direto: filtrar dados por período e gerar
-' planilha. GeradorPlanilha encapsula a lógica de
-' criação do arquivo sem necessidade de abstração adicional.
+' O fluxo é linear e bem definido. A entidade
+' RegistroFinanceiro encapsula a lógica de cálculo
+' seguindo o princípio Information Expert.

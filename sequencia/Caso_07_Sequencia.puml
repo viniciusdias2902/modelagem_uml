@@ -1,107 +1,58 @@
 @startuml
 
-title Caso 07 - Visualizar Tabela Financeira
+actor Motorista
+participant ":TelaControleRota" as TCR <<boundary>>
+participant ":ProximoPontoController" as PPC <<controller>>
+participant ":RotaRepository" as RR <<repository>>
+participant ":Rota" as R <<entity>>
 
-actor Secretaria as "Secretária"
+== Consultar Próximo Ponto ==
 
-participant ":TelaFinanceira" as TF <<boundary>>
-participant ":FinanceiroController" as FC <<controller>>
-participant ":RegistroFinanceiro" as RF <<entity>>
-participant ":Aluno" as A <<entity>>
-participant ":Pagamento" as P <<entity>>
+Motorista -> TCR: acessarTela()
+activate TCR
 
-Secretaria -> TF: acessarTelaFinanceira()
-activate TF
+TCR -> PPC: consultarProximoPonto(rota)
+activate PPC
 
-TF -> FC: carregarDadosFinanceiros()
-activate FC
+PPC -> RR: findById(rotaId)
+activate RR
+RR --> PPC: rota
+deactivate RR
 
-loop para cada registro
-    FC -> RF: getValorPago()
-    activate RF
-    RF --> FC: valorPago
-    deactivate RF
+PPC -> R: getPontoAtual()
+activate R
+R --> PPC: pontoAtual
+deactivate R
+
+
+alt pontoAtual == null
+    PPC --> TCR: erro("Ponto atual não definido")
+    TCR -> TCR: exibirErro("Atualize o ponto atual primeiro")
+else pontoAtual definido
+    PPC -> R: calcularProximoPonto()
+    activate R
+    note right
+      Information Expert:
+      Rota conhece seus pontos
+      e calcula o próximo
+      baseado na ordem
+    end note
+    R --> PPC: proximoPonto
+    deactivate R
     
-    FC -> RF: getValorDevido()
-    activate RF
-    RF --> FC: valorDevido
-    deactivate RF
-    
-    FC -> RF: getStatus()
-    activate RF
-    RF --> FC: status
-    deactivate RF
-    
-    FC -> A: getNome()
-    activate A
-    A --> FC: nome
-    deactivate A
+    alt proximoPonto == null
+        PPC --> TCR: null
+        TCR -> TCR: exibirMensagemUltimoPonto()
+        TCR --> Motorista: "Este é o último ponto da rota"
+    else proximoPonto existe
+        PPC --> TCR: proximoPonto
+        deactivate PPC
+        TCR -> TCR: exibirPontoAtual(pontoAtual)
+        TCR -> TCR: exibirProximoPonto(proximoPonto)
+        TCR --> Motorista: tela com pontos atual e próximo
+    end
 end
 
-FC --> TF: dadosFinanceiros
-deactivate FC
-
-TF -> TF: exibirTabelaFinanceira()
-
-TF -> FC: filtrarPagamentosRealizados()
-activate FC
-
-loop para cada pagamento realizado
-    FC -> P: getValor()
-    activate P
-    P --> FC: valor
-    deactivate P
-    
-    FC -> P: getStatus()
-    activate P
-    P --> FC: status
-    deactivate P
-end
-
-FC --> TF: pagamentosRealizados
-deactivate FC
-
-TF -> TF: exibirPagamentosRealizados()
-
-TF -> FC: filtrarPagamentosPendentes()
-activate FC
-
-FC -> RF: calcularSaldo()
-activate RF
-RF --> FC: saldo
-deactivate RF
-
-FC --> TF: pagamentosPendentes
-deactivate FC
-
-TF -> TF: exibirPagamentosPendentes()
-
-TF --> Secretaria: tabelaExibida
-deactivate TF
+deactivate TCR
 
 @enduml
-
-' ============================================
-' JUSTIFICATIVA DOS PADRÕES NA SEQUÊNCIA
-' ============================================
-'
-' GRASP Controller:
-' - FinanceiroController coordena o carregamento e
-'   filtragem dos dados financeiros.
-'
-' Information Expert (IE):
-' - RegistroFinanceiro conhece valores pagos/devidos e
-'   sabe calcular o saldo.
-' - Pagamento conhece seu valor e status.
-' - Aluno fornece seus dados para identificação.
-'
-' Low Coupling:
-' - TelaFinanceira não manipula entidades diretamente,
-'   delegando ao controller.
-'
-' High Cohesion:
-' - FinanceiroController foca em operações financeiras.
-' - RegistroFinanceiro centraliza cálculos de saldo.
-'
-' ATORES:
-' - Secretária: Visualiza a situação financeira dos alunos

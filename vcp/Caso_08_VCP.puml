@@ -1,57 +1,47 @@
 @startuml
 left to right direction
 
-class TelaFinanceira <<boundary>> {
-    +exibirListaAlunos()
-    +obterAlunoSelecionado()
-    +obterValorPagamento()
-    +obterDataPagamento()
-    +exibirConfirmacao()
+class TelaVisualizacaoRota <<boundary>> {
+    +exibirRota()
+    +exibirListaPontos()
+    +destacarPontoAluno()
 }
 
-class PagamentoController <<controller>> {
-    +carregarAlunos()
-    +registrarPagamento(aluno, valor, data)
-    +atualizarSaldo(aluno)
+class VisualizacaoRotaController <<controller>> {
+    +carregarRota()
+    +carregarPontos()
+    +identificarPontoAluno(aluno)
 }
 
-class Secretaria <<entity>> {
+class Rota <<entity>> {
+    -pontos: List<PontoEmbarque>
+    -pontoAtual: PontoEmbarque
+    +getPontos()
+    +getPontoAtual()
+}
+
+class PontoEmbarque <<entity>> {
     -nome: String
-    -email: String
+    -referencia: String
+    -ordem: Integer
     +getNome()
-    +getEmail()
-}
-
-class RegistroFinanceiro <<entity>> {
-    -valorPago: Decimal
-    -valorDevido: Decimal
-    -status: String
-    +adicionarPagamento(pagamento)
-    +atualizarStatus()
-    +calcularSaldo()
-}
-
-class Pagamento <<entity>> {
-    -valor: Decimal
-    -data: Date
-    -status: String
-    +getValor()
-    +getData()
+    +getReferencia()
+    +getOrdem()
 }
 
 class Aluno <<entity>> {
     -nome: String
     -email: String
+    -pontoEmbarque: PontoEmbarque
     +getNome()
-    +getRegistroFinanceiro()
+    +getPontoEmbarque()
 }
 
-TelaFinanceira --> PagamentoController
-PagamentoController --> Secretaria
-PagamentoController --> Aluno
-PagamentoController --> Pagamento
-Aluno --> RegistroFinanceiro
-RegistroFinanceiro --> Pagamento
+TelaVisualizacaoRota --> VisualizacaoRotaController
+VisualizacaoRotaController --> Rota
+VisualizacaoRotaController --> Aluno
+Rota --> PontoEmbarque
+Aluno --> PontoEmbarque
 
 @enduml
 
@@ -61,19 +51,18 @@ RegistroFinanceiro --> Pagamento
 '
 ' PADRÕES DE ANÁLISE:
 ' - BCE (Boundary-Controller-Entity): Separação entre
-'   interface (TelaFinanceira), lógica (PagamentoController)
-'   e dados (Secretaria, Pagamento, RegistroFinanceiro, Aluno).
-' - GRASP Controller: PagamentoController coordena o
-'   registro do pagamento e atualização do saldo.
-' - Information Expert: RegistroFinanceiro sabe como
-'   atualizar o saldo e status ao receber um pagamento.
+'   interface (TelaVisualizacaoRota), lógica
+'   (VisualizacaoRotaController) e dados (Rota, PontoEmbarque, Aluno).
+' - GRASP Controller: VisualizacaoRotaController coordena
+'   o carregamento e organização dos dados para exibição.
+' - Information Expert: Rota conhece seus pontos ordenados,
+'   Aluno conhece seu ponto de embarque.
 '
 ' PADRÕES DE PROJETO:
-' - Nenhum padrão de projeto foi necessário. O registro
-'   de pagamento é um processo direto sem variações
-'   comportamentais ou criação complexa.
+' - Nenhum padrão de projeto foi necessário. Este caso de
+'   uso é uma consulta simples de dados existentes sem
+'   lógica complexa de criação ou comportamento variável.
 '
 ' JUSTIFICATIVA:
-' O fluxo é linear e bem definido. A entidade
-' RegistroFinanceiro encapsula a lógica de cálculo
-' seguindo o princípio Information Expert.
+' O fluxo é de leitura e exibição de dados, não havendo
+' necessidade de padrões adicionais além do BCE básico.

@@ -2,28 +2,15 @@
 left to right direction
 
 class TelaFinanceira <<boundary>> {
-    +exibirListaAlunos()
-    +exibirPagamentos(aluno)
-    +obterFormatoEscolhido()
-    +disponibilizarDownload(arquivo)
+    +exibirTabelaFinanceira()
+    +exibirPagamentosRealizados()
+    +exibirPagamentosPendentes()
 }
 
-class ComprovanteController <<controller>> {
-    +carregarPagamentos(aluno)
-    +gerarComprovante(pagamento, formato)
-    +obterGeradorFormato(formato)
-}
-
-interface GeradorComprovante <<controller>> {
-    +gerar(pagamento): Arquivo
-}
-
-class GeradorPDF <<controller>> {
-    +gerar(pagamento): Arquivo
-}
-
-class GeradorWord <<controller>> {
-    +gerar(pagamento): Arquivo
+class FinanceiroController <<controller>> {
+    +carregarDadosFinanceiros()
+    +filtrarPagamentosRealizados()
+    +filtrarPagamentosPendentes()
 }
 
 class Secretaria <<entity>> {
@@ -33,35 +20,37 @@ class Secretaria <<entity>> {
     +getEmail()
 }
 
-class Pagamento <<entity>> {
-    -valor: Decimal
-    -data: Date
-    +getValor()
-    +getData()
-    +getAluno()
+class RegistroFinanceiro <<entity>> {
+    -valorPago: Decimal
+    -valorDevido: Decimal
+    -status: String
+    +getValorPago()
+    +getValorDevido()
+    +getStatus()
+    +calcularSaldo()
 }
 
 class Aluno <<entity>> {
     -nome: String
     -email: String
     +getNome()
+    +getEmail()
 }
 
-class Comprovante <<entity>> {
-    -dataEmissao: DateTime
-    -formato: String
-    +getConteudo()
+class Pagamento <<entity>> {
+    -valor: Decimal
+    -data: Date
+    -status: String
+    +getValor()
+    +getData()
+    +getStatus()
 }
 
-TelaFinanceira --> ComprovanteController
-ComprovanteController --> Secretaria
-ComprovanteController --> GeradorComprovante
-GeradorComprovante <|.. GeradorPDF
-GeradorComprovante <|.. GeradorWord
-ComprovanteController --> Pagamento
-GeradorPDF --> Comprovante
-GeradorWord --> Comprovante
-Pagamento --> Aluno
+TelaFinanceira --> FinanceiroController
+FinanceiroController --> Secretaria
+FinanceiroController --> RegistroFinanceiro
+RegistroFinanceiro --> Aluno
+RegistroFinanceiro --> Pagamento
 
 @enduml
 
@@ -71,19 +60,18 @@ Pagamento --> Aluno
 '
 ' PADRÕES DE ANÁLISE:
 ' - BCE (Boundary-Controller-Entity): Separação entre
-'   interface (TelaFinanceira), lógica (ComprovanteController,
-'   Geradores) e dados (Secretaria, Pagamento, Comprovante, Aluno).
-' - GRASP Controller: ComprovanteController coordena a
-'   seleção do gerador e criação do comprovante.
-' - Information Expert: Pagamento fornece os dados
-'   necessários para o comprovante.
+'   interface (TelaFinanceira), lógica (FinanceiroController)
+'   e dados (Secretaria, RegistroFinanceiro, Aluno, Pagamento).
+' - GRASP Controller: FinanceiroController coordena o
+'   carregamento e filtragem dos dados financeiros.
+' - Information Expert: RegistroFinanceiro calcula o saldo
+'   e status do aluno com base nos pagamentos.
 '
 ' PADRÕES DE PROJETO:
-' - Strategy: Aplicado através da interface GeradorComprovante
-'   com implementações GeradorPDF e GeradorWord. Permite
-'   variar o algoritmo de geração conforme o formato escolhido.
+' - Nenhum padrão de projeto foi necessário. O caso de uso
+'   consiste em consulta e exibição de dados financeiros
+'   sem lógica complexa.
 '
 ' JUSTIFICATIVA:
-' O Strategy é adequado pois existem duas formas distintas
-' de gerar o comprovante (PDF e Word). O padrão permite
-' adicionar novos formatos sem modificar o controller.
+' O fluxo é de leitura e apresentação de dados agregados.
+' A estrutura BCE organiza adequadamente as responsabilidades.

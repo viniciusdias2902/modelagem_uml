@@ -3,13 +3,8 @@ left to right direction
 
 actor Secretaria as "Secretária"
 
-usecase "Gerar Comprovante" as UC9
-usecase "Exportar como PDF" as UC9a
-usecase "Exportar como Word" as UC9b
+usecase "Visualizar Tabela de Mensalidades Dos Alunos" as UC7
 
-UC9 <.. UC9a : <<extend>>
-UC9 <.. UC9b : <<extend>>
-
-Secretaria --> UC9
+Secretaria --> UC7
 
 @enduml

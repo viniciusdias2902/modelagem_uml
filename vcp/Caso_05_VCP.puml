@@ -2,54 +2,51 @@
 left to right direction
 
 class TelaControleRota <<boundary>> {
-    +exibirListaPontos()
-    +obterPontoSelecionado()
-    +exibirPontoAtual()
-    +exibirProximoPonto()
+    +exibirRota()
+    +exibirBotaoIniciar()
+    +exibirConfirmacao()
 }
 
-class PontoController <<controller>> {
-    +carregarPontosRota()
-    +atualizarPontoAtual(ponto)
-    +calcularProximoPonto()
-    +disponibilizarPosicao()
+class ServicoNotificacao <<boundary>> {
+    +enviarNotificacao(aluno, mensagem)
+}
+
+class RotaController <<controller>> {
+    +carregarRota(data)
+    +iniciarRota()
+    +notificarAlunos()
 }
 
 class Rota <<entity>> {
-    -pontoAtual: PontoEmbarque
-    -proximoPonto: PontoEmbarque
+    -data: Date
     -status: String
-    +getPontoAtual()
-    +getProximoPonto()
-    +setPontoAtual(ponto)
-}
-
-class PontoEmbarque <<entity>> {
-    -nome: String
-    -referencia: String
-    -ordem: Integer
-    +getNome()
-    +getOrdem()
+    -horaInicio: DateTime
+    +iniciar()
+    +getStatus()
+    +getAlunos()
 }
 
 class Motorista <<entity>> {
     -nome: String
     -email: String
     +getNome()
+    +getEmail()
 }
 
 class Aluno <<entity>> {
     -nome: String
-    -pontoEmbarque: PontoEmbarque
-    +getPontoEmbarque()
-    +receberAtualizacao(pontoAtual)
+    -email: String
+    -dispositivo: String
+    +getNome()
+    +receberNotificacao(mensagem)
 }
 
-TelaControleRota --> PontoController
-PontoController --> Rota
-PontoController --> Motorista
-Rota --> PontoEmbarque
+TelaControleRota --> RotaController
+RotaController --> Rota
+RotaController --> Motorista
+RotaController --> ServicoNotificacao
 Rota --> Aluno
+ServicoNotificacao --> Aluno
 
 @enduml
 
@@ -59,18 +56,19 @@ Rota --> Aluno
 '
 ' PADRÕES DE ANÁLISE:
 ' - BCE (Boundary-Controller-Entity): Separação entre
-'   interface (TelaControleRota), lógica (PontoController)
-'   e dados (Rota, PontoEmbarque, Motorista, Aluno).
-' - GRASP Controller: PontoController coordena a atualização
-'   do ponto e cálculo do próximo.
-' - Information Expert: Rota conhece seus pontos e calcula
-'   qual é o próximo na sequência.
+'   interface (TelaControleRota), lógica (RotaController)
+'   e dados (Rota, Motorista, Aluno).
+' - GRASP Controller: RotaController coordena o início
+'   da rota e o disparo das notificações.
+' - Information Expert: Rota conhece seus alunos inscritos
+'   e gerencia seu próprio status.
 '
 ' PADRÕES DE PROJETO:
-' - Observer: Reutilizado do Caso 04 para notificar alunos
-'   sobre a atualização da posição do transporte.
+' - Observer: Aplicado para notificar os alunos quando a
+'   rota é iniciada. A Rota mantém lista de observadores
+'   (alunos) e os notifica sobre mudanças de estado.
 '
 ' JUSTIFICATIVA:
-' O Observer continua adequado pois os alunos precisam ser
-' informados em tempo real sobre a posição do transporte,
-' permitindo que acompanhem quantos pontos faltam.
+' O Observer é adequado pois múltiplos alunos precisam ser
+' notificados quando o estado da rota muda (início da viagem),
+' desacoplando a lógica de notificação da entidade Rota.

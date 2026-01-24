@@ -1,46 +1,55 @@
 @startuml
 left to right direction
 
-class TelaEnquete <<boundary>> {
-    +exibirEnquete()
-    +obterDataSelecionada()
-    +obterOpcaoTrajeto()
-    +exibirConfirmacao()
+class TelaLogin <<boundary>> {
+    +exibirFormulario()
+    +obterCredenciais()
+    +redirecionarTelaInicial(perfil)
+    +exibirMensagemErro()
 }
 
-class EnqueteController <<controller>> {
-    +carregarEnquete(data)
-    +registrarResposta(aluno, data, opcao)
-    +atualizarListaEmbarque()
-}
-
-class Enquete <<entity>> {
-    -data: Date
-    -ativa: Boolean
-    +getData()
-    +isAtiva()
-}
-
-class RespostaEnquete <<entity>> {
-    -data: Date
-    -opcaoTrajeto: String
-    +getData()
-    +getOpcaoTrajeto()
+class AutenticacaoController <<controller>> {
+    +autenticar(email, senha)
+    +validarCredenciais(email, senha)
+    +criarSessao(usuario)
 }
 
 class Aluno <<entity>> {
     -nome: String
     -email: String
-    -pontoEmbarque: PontoEmbarque
-    +getNome()
-    +getPontoEmbarque()
+    -senha: String
+    +getEmail()
+    +getSenha()
 }
 
-TelaEnquete --> EnqueteController
-EnqueteController --> Enquete
-EnqueteController --> RespostaEnquete
-EnqueteController --> Aluno
-RespostaEnquete --> Aluno
+class Motorista <<entity>> {
+    -nome: String
+    -email: String
+    -senha: String
+    +getEmail()
+    +getSenha()
+}
+
+class Secretaria <<entity>> {
+    -nome: String
+    -email: String
+    -senha: String
+    +getEmail()
+    +getSenha()
+}
+
+class Sessao <<entity>> {
+    -dataLogin: DateTime
+    -ativa: Boolean
+    +getDataLogin()
+    +isAtiva()
+}
+
+TelaLogin --> AutenticacaoController
+AutenticacaoController --> Aluno
+AutenticacaoController --> Motorista
+AutenticacaoController --> Secretaria
+AutenticacaoController --> Sessao
 
 @enduml
 
@@ -49,20 +58,21 @@ RespostaEnquete --> Aluno
 ' ============================================
 '
 ' PADRÕES DE ANÁLISE:
-' - BCE (Boundary-Controller-Entity): Separação clara entre
-'   interface (TelaEnquete), lógica (EnqueteController) e
-'   dados (Enquete, RespostaEnquete, Aluno).
-' - GRASP Controller: EnqueteController coordena o registro
-'   da resposta e atualização da lista de embarque.
-' - Information Expert: RespostaEnquete armazena a opção
-'   de trajeto do aluno para uma data específica.
+' - BCE (Boundary-Controller-Entity): Separação entre
+'   interface (TelaLogin), lógica (AutenticacaoController)
+'   e dados (Aluno, Motorista, Secretaria, Sessao).
+' - GRASP Controller: AutenticacaoController coordena o
+'   processo de login e validação.
+' - Information Expert: Cada entidade conhece suas credenciais,
+'   Sessao gerencia o estado de autenticação.
 '
 ' PADRÕES DE PROJETO:
-' - Nenhum padrão de projeto foi aplicado, pois o fluxo
-'   é linear e não apresenta variações comportamentais
-'   ou criações complexas.
+' - Nenhum padrão de projeto foi necessário neste caso,
+'   pois o fluxo de autenticação é direto e não apresenta
+'   variações ou complexidades que justifiquem padrões
+'   adicionais.
 '
 ' JUSTIFICATIVA:
-' O caso de uso segue um fluxo simples de coleta e registro
-' de dados. A estrutura BCE atende adequadamente às
-' necessidades sem complexidade adicional.
+' O caso de uso é simples e direto, não requerendo padrões
+' de projeto complexos. A estrutura BCE é suficiente para
+' organizar as responsabilidades.

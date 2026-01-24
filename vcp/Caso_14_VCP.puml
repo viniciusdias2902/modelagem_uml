@@ -1,0 +1,153 @@
+@startuml
+left to right direction
+
+' ==========================================
+' PADRÃO OBSERVER
+' ==========================================
+
+interface Subject <<interface>> {
+    +attach(observer: Observer)
+    +detach(observer: Observer)
+    +notify(evento: EventoSolicitacao)
+}
+
+interface Observer <<interface>> {
+    +update(evento: EventoSolicitacao)
+}
+
+class EventoSolicitacao {
+    -tipo: TipoEvento
+    -solicitacao: Solicitacao
+    +getTipo(): TipoEvento
+    +getSolicitacao(): Solicitacao
+}
+
+enum TipoEvento {
+    SOLICITACAO_CRIADA
+}
+
+class NotificacaoMotoristaObserver {
+    +update(evento: EventoSolicitacao)
+}
+
+' ==========================================
+' ECB
+' ==========================================
+
+class TelaSolicitarTroca <<boundary>> {
+    +exibirPontosDisponiveis(pontos: List)
+    +obterPontoSelecionado(): PontoEmbarque
+    +obterJustificativa(): String
+    +exibirConfirmacao(mensagem: String)
+    +exibirErro(mensagem: String)
+}
+
+class ServicoNotificacao <<boundary>> {
+    +enviarNotificacao(destinatario: String, titulo: String, mensagem: String)
+}
+
+class SolicitacaoController <<controller>> {
+    -observers: List<Observer>
+    +attach(observer: Observer)
+    +detach(observer: Observer)
+    +notify(evento: EventoSolicitacao)
+    +carregarPontosDisponiveis(rota: Rota): List
+    +criarSolicitacao(aluno: Aluno, novoPonto: PontoEmbarque, justificativa: String): Solicitacao
+}
+
+class Solicitacao <<entity>> {
+    -id: UUID
+    -pontoAtual: PontoEmbarque
+    -pontoDesejado: PontoEmbarque
+    -justificativa: String
+    -status: StatusSolicitacao
+    -dataCriacao: DateTime
+    +getAluno(): Aluno
+    +getPontoDesejado(): PontoEmbarque
+    +getStatus(): StatusSolicitacao
+}
+
+class Aluno <<entity>> {
+    -id: UUID
+    -nome: String
+    -email: String
+    -pontoEmbarque: PontoEmbarque
+    +getPontoEmbarque(): PontoEmbarque
+    +getRota(): Rota
+}
+
+class Motorista <<entity>> {
+    -id: UUID
+    -nome: String
+    -email: String
+    +getEmail(): String
+}
+
+class PontoEmbarque <<entity>> {
+    -id: UUID
+    -nome: String
+    -endereco: String
+    +getNome(): String
+}
+
+enum StatusSolicitacao <<entity>> {
+    PENDENTE
+    APROVADA
+    REJEITADA
+}
+
+' ==========================================
+' RELACIONAMENTOS
+' ==========================================
+
+SolicitacaoController ..|> Subject
+NotificacaoMotoristaObserver ..|> Observer
+
+TelaSolicitarTroca --> SolicitacaoController
+SolicitacaoController o--> "0..*" Observer : observers
+SolicitacaoController ..> Solicitacao : <<creates>>
+SolicitacaoController --> Aluno
+SolicitacaoController --> PontoEmbarque
+
+NotificacaoMotoristaObserver --> ServicoNotificacao
+NotificacaoMotoristaObserver --> Motorista
+Observer ..> EventoSolicitacao
+
+Solicitacao --> Aluno
+Solicitacao --> "2" PontoEmbarque
+Solicitacao --> StatusSolicitacao
+EventoSolicitacao --> TipoEvento
+EventoSolicitacao --> Solicitacao
+
+@enduml
+
+' ============================================
+' JUSTIFICATIVA DOS PADRÕES APLICADOS
+' ============================================
+'
+' PADRÕES DE ANÁLISE:
+' - BCE (Boundary-Controller-Entity): Separação entre
+'   interfaces (TelaSolicitarTroca, ServicoNotificacao),
+'   lógica (SolicitacaoController) e dados (Solicitacao,
+'   Aluno, Motorista, PontoEmbarque).
+' - GRASP Controller: SolicitacaoController coordena o
+'   fluxo de criação da solicitação.
+' - Information Expert: Solicitacao conhece seus próprios
+'   dados e Aluno conhece seu ponto de embarque.
+'
+' PADRÕES DE PROJETO:
+' - Observer (GoF): Implementado para notificar o motorista
+'   quando uma nova solicitação é criada.
+'   - Subject: interface com attach/detach/notify
+'   - Observer: interface com update(evento)
+'   - ConcreteSubject: SolicitacaoController mantém lista
+'     de observers e dispara notify() após criar solicitação
+'   - ConcreteObserver: NotificacaoMotoristaObserver reage
+'     ao evento SOLICITACAO_CRIADA e usa ServicoNotificacao
+'     (boundary) para enviar a notificação
+'
+' JUSTIFICATIVA:
+' O Observer é adequado pois desacopla a criação da
+' solicitação da lógica de notificação. Permite adicionar
+' novos observers (ex: LogObserver, EmailObserver) sem
+' modificar o controller.

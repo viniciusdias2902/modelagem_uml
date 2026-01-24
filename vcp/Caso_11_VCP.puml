@@ -1,49 +1,67 @@
 @startuml
 left to right direction
 
-class TelaGestaoPontos <<boundary>> {
-    +exibirFormulario()
-    +obterNome()
-    +obterReferencia()
-    +obterOrdem()
-    +exibirConfirmacao()
+class TelaFinanceira <<boundary>> {
+    +exibirListaAlunos()
+    +exibirPagamentos(aluno)
+    +obterFormatoEscolhido()
+    +disponibilizarDownload(arquivo)
 }
 
-class PontoEmbarqueController <<controller>> {
-    +validarDados(nome, referencia, ordem)
-    +cadastrarPonto(nome, referencia, ordem)
-    +atualizarOrdemRota()
+class ComprovanteController <<controller>> {
+    +carregarPagamentos(aluno)
+    +gerarComprovante(pagamento, formato)
+    +obterGeradorFormato(formato)
 }
 
-class Administrador <<entity>> {
+interface GeradorComprovante <<controller>> {
+    +gerar(pagamento): Arquivo
+}
+
+class GeradorPDF <<controller>> {
+    +gerar(pagamento): Arquivo
+}
+
+class GeradorWord <<controller>> {
+    +gerar(pagamento): Arquivo
+}
+
+class Secretaria <<entity>> {
     -nome: String
     -email: String
     +getNome()
     +getEmail()
 }
 
-class PontoEmbarque <<entity>> {
+class Pagamento <<entity>> {
+    -valor: Decimal
+    -data: Date
+    +getValor()
+    +getData()
+    +getAluno()
+}
+
+class Aluno <<entity>> {
     -nome: String
-    -referencia: String
-    -ordem: Integer
+    -email: String
     +getNome()
-    +getReferencia()
-    +getOrdem()
-    +setOrdem(ordem)
 }
 
-class Rota <<entity>> {
-    -pontos: List<PontoEmbarque>
-    +adicionarPonto(ponto)
-    +reordenarPontos()
-    +getPontos()
+class Comprovante <<entity>> {
+    -dataEmissao: DateTime
+    -formato: String
+    +getConteudo()
 }
 
-TelaGestaoPontos --> PontoEmbarqueController
-PontoEmbarqueController --> Administrador
-PontoEmbarqueController --> PontoEmbarque
-PontoEmbarqueController --> Rota
-Rota --> PontoEmbarque
+TelaFinanceira --> ComprovanteController
+ComprovanteController --> Secretaria
+ComprovanteController --> GeradorComprovante
+GeradorComprovante <|.. GeradorPDF
+GeradorComprovante <|.. GeradorWord
+ComprovanteController --> Pagamento
+GeradorPDF --> Comprovante
+GeradorWord --> Comprovante
+Pagamento --> Aluno
 
 @enduml
 
@@ -53,19 +71,19 @@ Rota --> PontoEmbarque
 '
 ' PADRÕES DE ANÁLISE:
 ' - BCE (Boundary-Controller-Entity): Separação entre
-'   interface (TelaGestaoPontos), lógica
-'   (PontoEmbarqueController) e dados (Administrador, PontoEmbarque, Rota).
-' - GRASP Controller: PontoEmbarqueController coordena
-'   a validação e cadastro do ponto.
-' - Information Expert: Rota gerencia a lista de pontos
-'   e sabe como reordená-los quando um novo é adicionado.
+'   interface (TelaFinanceira), lógica (ComprovanteController,
+'   Geradores) e dados (Secretaria, Pagamento, Comprovante, Aluno).
+' - GRASP Controller: ComprovanteController coordena a
+'   seleção do gerador e criação do comprovante.
+' - Information Expert: Pagamento fornece os dados
+'   necessários para o comprovante.
 '
 ' PADRÕES DE PROJETO:
-' - Nenhum padrão de projeto foi necessário. O cadastro
-'   é de um único tipo de entidade sem variações ou
-'   complexidade que justifique padrões adicionais.
+' - Strategy: Aplicado através da interface GeradorComprovante
+'   com implementações GeradorPDF e GeradorWord. Permite
+'   variar o algoritmo de geração conforme o formato escolhido.
 '
 ' JUSTIFICATIVA:
-' O fluxo é simples e direto. A Rota assume a
-' responsabilidade de manter a ordenação dos pontos
-' seguindo o princípio Information Expert.
+' O Strategy é adequado pois existem duas formas distintas
+' de gerar o comprovante (PDF e Word). O padrão permite
+' adicionar novos formatos sem modificar o controller.

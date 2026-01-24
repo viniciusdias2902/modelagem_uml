@@ -1,82 +1,87 @@
 @startuml
 left to right direction
 
-class TelaCadastro <<boundary>> {
-    +exibirFormulario()
-    +obterDados()
-    +exibirMensagemSucesso()
-    +exibirMensagemErro()
+' ==========================================
+' CONTRATO
+' ==========================================
+interface Usuario <<interface>> {
+    +getNome(): String
+    +getEmail(): String
+    +getSenha(): String
 }
 
-class CadastroController <<controller>> {
-    +cadastrarUsuario(dados)
-    +validarDados(dados)
-}
-
-class UsuarioFactory <<controller>> {
-    +criarUsuario(tipo, dados): Usuario
-}
-
-class Administrador <<entity>> {
-    -nome: String
-    -email: String
-    -senha: String
-    +getNome()
-    +getEmail()
-}
-
+' ==========================================
+' ENTIDADES
+' ==========================================
 class Aluno <<entity>> {
     -nome: String
     -email: String
     -senha: String
     -pontoEmbarque: PontoEmbarque
-    +getNome()
-    +getEmail()
+    +getNome(): String
+    +getEmail(): String
+    +getSenha(): String
+    +getPontoEmbarque(): PontoEmbarque
 }
 
 class Motorista <<entity>> {
     -nome: String
     -email: String
     -senha: String
-    +getNome()
-    +getEmail()
+    -cnh: String
+    +getNome(): String
+    +getEmail(): String
+    +getSenha(): String
 }
 
 class Secretaria <<entity>> {
     -nome: String
     -email: String
     -senha: String
-    +getNome()
-    +getEmail()
+    +getNome(): String
+    +getEmail(): String
+    +getSenha(): String
+}
+
+Usuario <|.. Aluno
+Usuario <|.. Motorista
+Usuario <|.. Secretaria
+
+' ==========================================
+' DTO
+' ==========================================
+class DadosUsuario <<dto>> {
+    nome: String
+    email: String
+    senha: String
+    cnh: String [0..1]
+    pontoEmbarque: PontoEmbarque [0..1]
+}
+
+' ==========================================
+' FACTORY
+' ==========================================
+class UsuarioFactory {
+    +criarUsuario(dados: DadosUsuario): Usuario
+}
+
+UsuarioFactory ..> Usuario : <<creates>>
+
+' ==========================================
+' ECB
+' ==========================================
+class TelaCadastro <<boundary>> {
+    +obterDados(): DadosUsuario
+    +exibirMensagemSucesso()
+    +exibirMensagemErro(msg: String)
+}
+
+class CadastroController <<controller>> {
+    +cadastrarUsuario(dados: DadosUsuario)
+    -validarDados(dados: DadosUsuario): boolean
 }
 
 TelaCadastro --> CadastroController
 CadastroController --> UsuarioFactory
-UsuarioFactory --> Administrador
-UsuarioFactory --> Aluno
-UsuarioFactory --> Motorista
-UsuarioFactory --> Secretaria
 
 @enduml
-
-' ============================================
-' JUSTIFICATIVA DOS PADRÕES APLICADOS
-' ============================================
-'
-' PADRÕES DE ANÁLISE:
-' - BCE (Boundary-Controller-Entity): Separação clara entre
-'   interface (TelaCadastro), lógica (CadastroController) e
-'   dados (Administrador, Aluno, Motorista, Secretaria).
-' - GRASP Controller: CadastroController recebe e coordena
-'   as operações do caso de uso.
-' - Information Expert: Cada entidade mantém seus próprios dados.
-'
-' PADRÕES DE PROJETO:
-' - Factory: UsuarioFactory cria instâncias específicas
-'   (Aluno, Motorista, Secretaria, Administrador) conforme
-'   o tipo de perfil, encapsulando a lógica de criação.
-'
-' JUSTIFICATIVA:
-' O Factory é necessário pois existem quatro tipos distintos
-' de usuários, centralizando a criação e facilitando
-' futuras extensões de tipos de usuário.

@@ -1,0 +1,10 @@
+@startuml
+left to right direction
+
+actor Administrador
+
+usecase "Cadastrar Ponto de Embarque" as UC11
+
+Administrador --> UC11
+
+@enduml

@@ -3,11 +3,9 @@ left to right direction
 
 actor Secretaria as "Secretária"
 
-usecase "Exportar Dados Financeiros" as UC10
-usecase "Gerar Planilha" as UC10a
+usecase "Atualizar Pagamento" as UC8
 
-UC10 ..> UC10a : <<include>>
 
-Secretaria --> UC10
+Secretaria --> UC8
 
 @enduml

@@ -1,52 +1,46 @@
 @startuml
 left to right direction
 
-class TelaControleRota <<boundary>> {
-    +exibirRota()
-    +exibirBotaoIniciar()
+class TelaEnquete <<boundary>> {
+    +exibirEnquete()
+    +obterDataSelecionada()
+    +obterOpcaoTrajeto()
     +exibirConfirmacao()
 }
 
-class ServicoNotificacao <<boundary>> {
-    +enviarNotificacao(aluno, mensagem)
+class EnqueteController <<controller>> {
+    +carregarEnquete(data)
+    +registrarResposta(aluno, data, opcao)
+    +atualizarListaEmbarque()
 }
 
-class RotaController <<controller>> {
-    +carregarRota(data)
-    +iniciarRota()
-    +notificarAlunos()
-}
-
-class Rota <<entity>> {
+class Enquete <<entity>> {
     -data: Date
-    -status: String
-    -horaInicio: DateTime
-    +iniciar()
-    +getStatus()
-    +getAlunos()
+    -ativa: Boolean
+    +getData()
+    +isAtiva()
 }
 
-class Motorista <<entity>> {
-    -nome: String
-    -email: String
-    +getNome()
-    +getEmail()
+class RespostaEnquete <<entity>> {
+    -data: Date
+    -opcaoTrajeto: String
+    +getData()
+    +getOpcaoTrajeto()
 }
 
 class Aluno <<entity>> {
     -nome: String
     -email: String
-    -dispositivo: String
+    -pontoEmbarque: PontoEmbarque
     +getNome()
-    +receberNotificacao(mensagem)
+    +getPontoEmbarque()
 }
 
-TelaControleRota --> RotaController
-RotaController --> Rota
-RotaController --> Motorista
-RotaController --> ServicoNotificacao
-Rota --> Aluno
-ServicoNotificacao --> Aluno
+TelaEnquete --> EnqueteController
+EnqueteController --> Enquete
+EnqueteController --> RespostaEnquete
+EnqueteController --> Aluno
+RespostaEnquete --> Aluno
 
 @enduml
 
@@ -55,20 +49,20 @@ ServicoNotificacao --> Aluno
 ' ============================================
 '
 ' PADRÕES DE ANÁLISE:
-' - BCE (Boundary-Controller-Entity): Separação entre
-'   interface (TelaControleRota), lógica (RotaController)
-'   e dados (Rota, Motorista, Aluno).
-' - GRASP Controller: RotaController coordena o início
-'   da rota e o disparo das notificações.
-' - Information Expert: Rota conhece seus alunos inscritos
-'   e gerencia seu próprio status.
+' - BCE (Boundary-Controller-Entity): Separação clara entre
+'   interface (TelaEnquete), lógica (EnqueteController) e
+'   dados (Enquete, RespostaEnquete, Aluno).
+' - GRASP Controller: EnqueteController coordena o registro
+'   da resposta e atualização da lista de embarque.
+' - Information Expert: RespostaEnquete armazena a opção
+'   de trajeto do aluno para uma data específica.
 '
 ' PADRÕES DE PROJETO:
-' - Observer: Aplicado para notificar os alunos quando a
-'   rota é iniciada. A Rota mantém lista de observadores
-'   (alunos) e os notifica sobre mudanças de estado.
+' - Nenhum padrão de projeto foi aplicado, pois o fluxo
+'   é linear e não apresenta variações comportamentais
+'   ou criações complexas.
 '
 ' JUSTIFICATIVA:
-' O Observer é adequado pois múltiplos alunos precisam ser
-' notificados quando o estado da rota muda (início da viagem),
-' desacoplando a lógica de notificação da entidade Rota.
+' O caso de uso segue um fluxo simples de coleta e registro
+' de dados. A estrutura BCE atende adequadamente às
+' necessidades sem complexidade adicional.
