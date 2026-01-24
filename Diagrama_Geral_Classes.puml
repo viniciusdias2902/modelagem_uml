@@ -1,44 +1,340 @@
 @startuml
 
-title Diagrama Geral de Classes - Sistema Unibus (Arquitetura BCE Completa)
+' ==========================================
+' INTERFACES
+' ==========================================
 
-skinparam classAttributeIconSize 0
-skinparam packageStyle rectangle
+package "Interfaces" {
+    interface Usuario <<interface>> {
+        +getNome(): String
+        +getEmail(): String
+        +getSenha(): String
+    }
 
-' ============================================
-' CAMADA BOUNDARY - INTERFACES
-' ============================================
-package "Boundary" <<Frame>> {
+    interface Subject <<interface>> {
+        +attach(observer: Observer)
+        +detach(observer: Observer)
+        +notify(evento: Object)
+    }
 
+    interface Observer <<interface>> {
+        +update(evento: Object)
+    }
+
+    interface GeradorComprovante <<interface>> {
+        +gerar(pagamento: Pagamento): Arquivo
+    }
+}
+
+' ==========================================
+' ENUMS
+' ==========================================
+
+package "Enumerations" {
+    enum StatusRota {
+        NAO_INICIADA
+        EM_ANDAMENTO
+        FINALIZADA
+    }
+
+    enum StatusSolicitacao {
+        PENDENTE
+        APROVADA
+        REJEITADA
+    }
+
+    enum TipoEventoRota {
+        ROTA_INICIADA
+    }
+
+    enum TipoEventoSolicitacao {
+        SOLICITACAO_CRIADA
+        SOLICITACAO_APROVADA
+        SOLICITACAO_REJEITADA
+    }
+}
+
+' ==========================================
+' FACTORY PATTERN
+' ==========================================
+
+package "Factory Pattern" {
+    class UsuarioFactory {
+        +criarUsuario(dados: DadosUsuario): Usuario
+    }
+
+    class DadosUsuario <<dto>> {
+        +nome: String
+        +email: String
+        +senha: String
+        +cnh: String
+        +pontoEmbarque: PontoEmbarque
+    }
+}
+
+' ==========================================
+' OBSERVER PATTERN
+' ==========================================
+
+package "Observer Pattern" {
+    class EventoRota {
+        -tipo: TipoEventoRota
+        -rota: Rota
+        -timestamp: DateTime
+        +getTipo(): TipoEventoRota
+        +getRota(): Rota
+    }
+
+    class EventoPosicao {
+        -rota: Rota
+        -pontoAtual: PontoEmbarque
+        -timestamp: DateTime
+        +getRota(): Rota
+        +getPontoAtual(): PontoEmbarque
+    }
+
+    class EventoSolicitacao {
+        -tipo: TipoEventoSolicitacao
+        -solicitacao: Solicitacao
+        +getTipo(): TipoEventoSolicitacao
+        +getSolicitacao(): Solicitacao
+    }
+
+    class NotificacaoAlunoObserver {
+        +update(evento: Object)
+    }
+
+    class NotificacaoMotoristaObserver {
+        +update(evento: Object)
+    }
+}
+
+' ==========================================
+' STRATEGY PATTERN
+' ==========================================
+
+package "Strategy Pattern" {
+    class GeradorPDF {
+        +gerar(pagamento: Pagamento): Arquivo
+    }
+
+    class GeradorWord {
+        +gerar(pagamento: Pagamento): Arquivo
+    }
+
+    class GeradorPlanilha {
+        +criar(dados: List): Arquivo
+        +adicionarCabecalho()
+        +adicionarLinhas(registros: List)
+    }
+}
+
+' ==========================================
+' ENTITIES
+' ==========================================
+
+package "Entities" {
+
+    package "Usuários" {
+        class Administrador <<entity>> {
+            -id: UUID
+            -nome: String
+            -email: String
+            -senha: String
+            +getNome(): String
+            +getEmail(): String
+        }
+
+        class Aluno <<entity>> {
+            -id: UUID
+            -nome: String
+            -email: String
+            -senha: String
+            -pontoEmbarque: PontoEmbarque
+            +getNome(): String
+            +getEmail(): String
+            +getSenha(): String
+            +getPontoEmbarque(): PontoEmbarque
+            +setPontoEmbarque(ponto: PontoEmbarque)
+            +getRegistroFinanceiro(): RegistroFinanceiro
+            +getRota(): Rota
+        }
+
+        class Motorista <<entity>> {
+            -id: UUID
+            -nome: String
+            -email: String
+            -senha: String
+            -cnh: String
+            +getNome(): String
+            +getEmail(): String
+            +getSenha(): String
+        }
+
+        class Secretaria <<entity>> {
+            -id: UUID
+            -nome: String
+            -email: String
+            -senha: String
+            +getNome(): String
+            +getEmail(): String
+            +getSenha(): String
+        }
+
+        class Sessao <<entity>> {
+            -id: UUID
+            -dataLogin: DateTime
+            -ativa: Boolean
+            +getDataLogin(): DateTime
+            +isAtiva(): Boolean
+        }
+    }
+
+    package "Rota e Transporte" {
+        class Rota <<entity>> {
+            -id: UUID
+            -nome: String
+            -data: Date
+            -status: StatusRota
+            -horaInicio: DateTime
+            -pontoAtual: PontoEmbarque
+            -pontos: List<PontoEmbarque>
+            +iniciar()
+            +getStatus(): StatusRota
+            +getPontoAtual(): PontoEmbarque
+            +setPontoAtual(ponto: PontoEmbarque)
+            +getPontos(): List<PontoEmbarque>
+            +getAlunos(): List<Aluno>
+            +adicionarPonto(ponto: PontoEmbarque)
+            +reordenarPontos()
+            +calcularProximoPonto(): PontoEmbarque
+        }
+
+        class PontoEmbarque <<entity>> {
+            -id: UUID
+            -nome: String
+            -endereco: String
+            -referencia: String
+            -ordem: Integer
+            +getNome(): String
+            +getEndereco(): String
+            +getReferencia(): String
+            +getOrdem(): Integer
+            +setOrdem(ordem: Integer)
+        }
+    }
+
+    package "Enquete" {
+        class Enquete <<entity>> {
+            -id: UUID
+            -data: Date
+            -ativa: Boolean
+            +getData(): Date
+            +isAtiva(): Boolean
+        }
+
+        class RespostaEnquete <<entity>> {
+            -id: UUID
+            -data: Date
+            -opcaoTrajeto: String
+            +getData(): Date
+            +getOpcaoTrajeto(): String
+        }
+    }
+
+    package "Financeiro" {
+        class RegistroFinanceiro <<entity>> {
+            -id: UUID
+            -valorPago: Decimal
+            -valorDevido: Decimal
+            -status: String
+            +getValorPago(): Decimal
+            +getValorDevido(): Decimal
+            +getStatus(): String
+            +adicionarPagamento(pagamento: Pagamento)
+            +calcularSaldo(): Decimal
+            +atualizarStatus()
+        }
+
+        class Pagamento <<entity>> {
+            -id: UUID
+            -valor: Decimal
+            -data: Date
+            -status: String
+            +getValor(): Decimal
+            +getData(): Date
+            +getStatus(): String
+            +getAluno(): Aluno
+        }
+
+        class Comprovante <<entity>> {
+            -id: UUID
+            -dataEmissao: DateTime
+            -formato: String
+            +getConteudo(): Arquivo
+        }
+    }
+
+    package "Solicitação" {
+        class Solicitacao <<entity>> {
+            -id: UUID
+            -pontoAtual: PontoEmbarque
+            -pontoDesejado: PontoEmbarque
+            -justificativa: String
+            -status: StatusSolicitacao
+            -dataCriacao: DateTime
+            -dataDecisao: DateTime
+            -motivoRejeicao: String
+            +aprovar()
+            +rejeitar(motivo: String)
+            +getAluno(): Aluno
+            +getPontoDesejado(): PontoEmbarque
+            +getStatus(): StatusSolicitacao
+        }
+    }
+}
+
+' ==========================================
+' BOUNDARIES
+' ==========================================
+
+package "Boundaries" {
     class TelaCadastro <<boundary>> {
         +exibirFormulario()
-        +obterDados()
+        +obterDados(): DadosUsuario
         +exibirMensagemSucesso()
-        +exibirMensagemErro()
+        +exibirMensagemErro(msg: String)
+    }
+
+    class TelaAutoCadastro <<boundary>> {
+        +exibirFormulario()
+        +obterDados(): DadosUsuario
+        +exibirMensagemSucesso()
+        +exibirMensagemErro(msg: String)
     }
 
     class TelaLogin <<boundary>> {
         +exibirFormulario()
         +obterCredenciais()
-        +redirecionarTelaInicial(perfil)
+        +redirecionarTelaInicial(perfil: String)
         +exibirMensagemErro()
     }
 
     class TelaEnquete <<boundary>> {
         +exibirEnquete()
-        +obterDataSelecionada()
-        +obterOpcaoTrajeto()
+        +obterDataSelecionada(): Date
+        +obterOpcaoTrajeto(): String
         +exibirConfirmacao()
     }
 
     class TelaControleRota <<boundary>> {
-        +exibirRota()
+        +exibirRota(rota: Rota)
         +exibirBotaoIniciar()
-        +exibirListaPontos()
-        +obterPontoSelecionado()
-        +exibirPontoAtual()
-        +exibirProximoPonto()
-        +exibirConfirmacao()
+        +exibirListaPontos(pontos: List)
+        +exibirPontoAtual(ponto: PontoEmbarque)
+        +exibirProximoPonto(ponto: PontoEmbarque)
+        +exibirConfirmacao(msg: String)
+        +exibirErro(msg: String)
     }
 
     class TelaVisualizacaoRota <<boundary>> {
@@ -50,373 +346,295 @@ package "Boundary" <<Frame>> {
     class TelaFinanceira <<boundary>> {
         +exibirTabelaFinanceira()
         +exibirListaAlunos()
-        +exibirPagamentos(aluno)
-        +exibirPagamentosRealizados()
-        +exibirPagamentosPendentes()
-        +obterAlunoSelecionado()
-        +obterValorPagamento()
-        +obterDataPagamento()
-        +obterFormatoEscolhido()
+        +exibirPagamentos(aluno: Aluno)
+        +obterFormatoEscolhido(): String
         +obterPeriodo()
-        +disponibilizarDownload(arquivo)
+        +disponibilizarDownload(arquivo: Arquivo)
         +exibirConfirmacao()
     }
 
     class TelaGestaoPontos <<boundary>> {
         +exibirFormulario()
-        +obterNome()
-        +obterReferencia()
-        +obterOrdem()
+        +obterNome(): String
+        +obterReferencia(): String
+        +obterOrdem(): Integer
         +exibirConfirmacao()
     }
 
-    class TelaSolicitacoes <<boundary>> {
-        +exibirPontosDisponiveis()
-        +obterPontoSelecionado()
-        +obterJustificativa()
-        +exibirConfirmacao()
+    class TelaSolicitarTroca <<boundary>> {
+        +exibirPontosDisponiveis(pontos: List)
+        +obterPontoSelecionado(): PontoEmbarque
+        +obterJustificativa(): String
+        +exibirConfirmacao(msg: String)
+        +exibirErro(msg: String)
     }
 
     class TelaAnaliseSolicitacao <<boundary>> {
-        +exibirListaSolicitacoes()
-        +exibirDetalhesSolicitacao()
-        +obterDecisao()
+        +exibirListaSolicitacoes(lista: List)
+        +exibirDetalhesSolicitacao(s: Solicitacao)
+        +obterDecisao(): String
+        +obterMotivoRejeicao(): String
+        +exibirConfirmacao(msg: String)
     }
 
     class ServicoNotificacao <<boundary>> {
-        +enviarNotificacao(destinatario, mensagem)
-        +notificar(destinatario, mensagem)
+        +enviarNotificacao(destinatario: String, titulo: String, mensagem: String)
     }
 }
 
-' ============================================
-' CAMADA CONTROLLER - LÓGICA DE APLICAÇÃO
-' ============================================
-package "Controller" <<Frame>> {
+' ==========================================
+' CONTROLLERS
+' ==========================================
 
+package "Controllers" {
     class CadastroController <<controller>> {
-        +cadastrarUsuario(dados)
-        +validarDados(dados)
+        +cadastrarUsuario(dados: DadosUsuario)
+        -validarDados(dados: DadosUsuario): Boolean
     }
 
-    class UsuarioFactory <<controller>> {
-        +criarUsuario(tipo, dados): Usuario
+    class AutoCadastroController <<controller>> {
+        +realizarCadastro(dados: DadosUsuario)
+        -validarDados(dados: DadosUsuario): Boolean
     }
 
     class AutenticacaoController <<controller>> {
-        +autenticar(email, senha)
-        +validarCredenciais(email, senha)
-        +criarSessao(usuario)
+        +autenticar(email: String, senha: String): Usuario
+        -validarCredenciais(email: String, senha: String): Boolean
+        +criarSessao(usuario: Usuario): Sessao
     }
 
     class EnqueteController <<controller>> {
-        +carregarEnquete(data)
-        +registrarResposta(aluno, data, opcao)
+        +carregarEnquete(data: Date): Enquete
+        +registrarResposta(aluno: Aluno, data: Date, opcao: String)
         +atualizarListaEmbarque()
     }
 
-    class RotaController <<controller>> {
-        +carregarRota(data)
-        +iniciarRota()
-        +notificarAlunos()
+    class IniciarRotaController <<controller>> {
+        -observers: List<Observer>
+        +attach(observer: Observer)
+        +detach(observer: Observer)
+        +notify(evento: EventoRota)
+        +carregarRota(data: Date): Rota
+        +iniciarRota(rota: Rota)
     }
 
-    class PontoController <<controller>> {
-        +carregarPontosRota()
-        +atualizarPontoAtual(ponto)
-        +calcularProximoPonto()
-        +disponibilizarPosicao()
+    class PontoAtualController <<controller>> {
+        -observers: List<Observer>
+        +attach(observer: Observer)
+        +detach(observer: Observer)
+        +notify(evento: EventoPosicao)
+        +carregarPontosRota(rota: Rota): List
+        +atualizarPontoAtual(rota: Rota, ponto: PontoEmbarque)
+    }
+
+    class ProximoPontoController <<controller>> {
+        +consultarProximoPonto(rota: Rota): PontoEmbarque
     }
 
     class VisualizacaoRotaController <<controller>> {
-        +carregarRota()
-        +carregarPontos()
-        +identificarPontoAluno(aluno)
+        +carregarRota(): Rota
+        +carregarPontos(): List
+        +identificarPontoAluno(aluno: Aluno): PontoEmbarque
     }
 
     class FinanceiroController <<controller>> {
-        +carregarDadosFinanceiros()
-        +filtrarPagamentosRealizados()
-        +filtrarPagamentosPendentes()
+        +carregarDadosFinanceiros(): List
+        +filtrarPagamentosRealizados(): List
+        +filtrarPagamentosPendentes(): List
     }
 
     class PagamentoController <<controller>> {
-        +carregarAlunos()
-        +registrarPagamento(aluno, valor, data)
-        +atualizarSaldo(aluno)
+        +carregarAlunos(): List
+        +registrarPagamento(aluno: Aluno, valor: Decimal, data: Date)
+        +atualizarSaldo(aluno: Aluno)
     }
 
     class ComprovanteController <<controller>> {
-        +carregarPagamentos(aluno)
-        +gerarComprovante(pagamento, formato)
-        +obterGeradorFormato(formato)
+        +carregarPagamentos(aluno: Aluno): List
+        +gerarComprovante(pagamento: Pagamento, formato: String): Arquivo
+        -obterGeradorFormato(formato: String): GeradorComprovante
     }
 
     class ExportacaoController <<controller>> {
-        +carregarDadosPeriodo(dataInicio, dataFim)
-        +gerarPlanilha(dados)
-        +exportar()
-    }
-
-    class GeradorPlanilha <<controller>> {
-        +criar(dados): Arquivo
-        +adicionarCabecalho()
-        +adicionarLinhas(registros)
+        +carregarDadosPeriodo(dataInicio: Date, dataFim: Date): List
+        +exportar(): Arquivo
+        -gerarPlanilha(dados: List): Arquivo
     }
 
     class PontoEmbarqueController <<controller>> {
-        +validarDados(nome, referencia, ordem)
-        +cadastrarPonto(nome, referencia, ordem)
+        +cadastrarPonto(nome: String, referencia: String, ordem: Integer)
+        -validarDados(nome: String, referencia: String, ordem: Integer): Boolean
         +atualizarOrdemRota()
     }
 
     class SolicitacaoController <<controller>> {
-        +carregarPontosDisponiveis()
-        +criarSolicitacao(aluno, novoPonto, justificativa)
-        +notificarMotorista(solicitacao)
-        +carregarSolicitacoesPendentes()
-        +processarDecisao(solicitacao, decisao)
-        +notificarAluno(solicitacao, decisao)
+        -observers: List<Observer>
+        +attach(observer: Observer)
+        +detach(observer: Observer)
+        +notify(evento: EventoSolicitacao)
+        +carregarPontosDisponiveis(rota: Rota): List
+        +criarSolicitacao(aluno: Aluno, novoPonto: PontoEmbarque, justificativa: String): Solicitacao
+        -validarSolicitacao(aluno: Aluno, novoPonto: PontoEmbarque): Boolean
     }
 
-    interface GeradorComprovante <<controller>> {
-        +gerar(pagamento): Comprovante
-    }
-
-    class GeradorPDF <<controller>> {
-        +gerar(pagamento): Comprovante
-    }
-
-    class GeradorWord <<controller>> {
-        +gerar(pagamento): Comprovante
-    }
-}
-
-' ============================================
-' CAMADA ENTITY - DOMÍNIO
-' ============================================
-package "Entity" <<Frame>> {
-
-    abstract class Usuario <<entity>> {
-        -id: Integer
-        -nome: String
-        -email: String
-        -senha: String
-        +getNome(): String
-        +getEmail(): String
-        +getSenha(): String
-        +autenticar(senha): Boolean
-    }
-
-    class Administrador <<entity>> {
-        +cadastrarUsuario(dados)
-        +cadastrarPontoEmbarque(dados)
-    }
-
-    class Aluno <<entity>> {
-        -dispositivo: String
-        +getPontoEmbarque(): PontoEmbarque
-        +setPontoEmbarque(ponto)
-        +getRegistroFinanceiro(): RegistroFinanceiro
-        +receberNotificacao(mensagem)
-        +receberAtualizacao(pontoAtual)
-    }
-
-    class Motorista <<entity>> {
-        +receberNotificacao(mensagem)
-    }
-
-    class Secretaria <<entity>> {
-    }
-
-    class Sessao <<entity>> {
-        -dataLogin: DateTime
-        -ativa: Boolean
-        +getUsuario(): Usuario
-        +getDataLogin(): DateTime
-        +isAtiva(): Boolean
-        +encerrar()
-    }
-
-    class Rota <<entity>> {
-        -data: Date
-        -status: String
-        -horaInicio: DateTime
-        +iniciar()
-        +finalizar()
-        +getStatus(): String
-        +getPontos(): List
-        +getAlunos(): List
-        +getPontoAtual(): PontoEmbarque
-        +getProximoPonto(): PontoEmbarque
-        +setPontoAtual(ponto)
-    }
-
-    class PontoEmbarque <<entity>> {
-        -nome: String
-        -referencia: String
-        -ordem: Integer
-        +getNome(): String
-        +getReferencia(): String
-        +getOrdem(): Integer
-        +setOrdem(ordem)
-    }
-
-    class Enquete <<entity>> {
-        -data: Date
-        -ativa: Boolean
-        +getData(): Date
-        +isAtiva(): Boolean
-        +getRespostas(): List
-    }
-
-    class RespostaEnquete <<entity>> {
-        -data: Date
-        -opcaoTrajeto: String
-        +getData(): Date
-        +getOpcaoTrajeto(): String
-        +getAluno(): Aluno
-    }
-
-    class RegistroFinanceiro <<entity>> {
-        -valorPago: Decimal
-        -valorDevido: Decimal
-        -status: String
-        +getValorPago(): Decimal
-        +getValorDevido(): Decimal
-        +getStatus(): String
-        +calcularSaldo(): Decimal
-        +adicionarPagamento(pagamento)
-        +atualizarStatus()
-    }
-
-    class Pagamento <<entity>> {
-        -valor: Decimal
-        -data: Date
-        -status: String
-        +getValor(): Decimal
-        +getData(): Date
-        +getStatus(): String
-        +getAluno(): Aluno
-    }
-
-    class Comprovante <<entity>> {
-        -dataEmissao: DateTime
-        -formato: String
-        +getConteudo(): String
-        +getPagamento(): Pagamento
-    }
-
-    class Solicitacao <<entity>> {
-        -justificativa: String
-        -status: String
-        -dataSolicitacao: DateTime
-        +getStatus(): String
-        +getJustificativa(): String
-        +getPontoAtual(): PontoEmbarque
-        +getPontoDesejado(): PontoEmbarque
-        +aprovar()
-        +rejeitar()
+    class AnaliseSolicitacaoController <<controller>> {
+        -observers: List<Observer>
+        +attach(observer: Observer)
+        +detach(observer: Observer)
+        +notify(evento: EventoSolicitacao)
+        +carregarSolicitacoesPendentes(): List
+        +aprovarSolicitacao(solicitacao: Solicitacao)
+        +rejeitarSolicitacao(solicitacao: Solicitacao, motivo: String)
     }
 }
 
-' ============================================
-' RELACIONAMENTOS BOUNDARY -> CONTROLLER
-' ============================================
+' ==========================================
+' RELACIONAMENTOS - HERANÇA E INTERFACES
+' ==========================================
+
+Usuario <|.. Aluno
+Usuario <|.. Motorista
+Usuario <|.. Secretaria
+
+Subject <|.. IniciarRotaController
+Subject <|.. PontoAtualController
+Subject <|.. SolicitacaoController
+Subject <|.. AnaliseSolicitacaoController
+
+Observer <|.. NotificacaoAlunoObserver
+Observer <|.. NotificacaoMotoristaObserver
+
+GeradorComprovante <|.. GeradorPDF
+GeradorComprovante <|.. GeradorWord
+
+' ==========================================
+' RELACIONAMENTOS - ENTIDADES
+' ==========================================
+
+Aluno --> PontoEmbarque : pontoEmbarque
+Aluno --> RegistroFinanceiro
+Aluno --> Rota
+
+Rota --> StatusRota
+Rota --> "0..*" PontoEmbarque : pontos
+Rota --> PontoEmbarque : pontoAtual
+Rota --> "0..*" Aluno
+
+RegistroFinanceiro --> "0..*" Pagamento
+RegistroFinanceiro --> Aluno
+
+Pagamento --> Aluno
+
+RespostaEnquete --> Aluno
+
+Solicitacao --> Aluno
+Solicitacao --> "2" PontoEmbarque
+Solicitacao --> StatusSolicitacao
+
+Sessao --> Usuario
+
+' ==========================================
+' RELACIONAMENTOS - EVENTOS
+' ==========================================
+
+EventoRota --> TipoEventoRota
+EventoRota --> Rota
+
+EventoPosicao --> Rota
+EventoPosicao --> PontoEmbarque
+
+EventoSolicitacao --> TipoEventoSolicitacao
+EventoSolicitacao --> Solicitacao
+
+' ==========================================
+' RELACIONAMENTOS - BOUNDARIES E CONTROLLERS
+' ==========================================
+
 TelaCadastro --> CadastroController
+TelaAutoCadastro --> AutoCadastroController
 TelaLogin --> AutenticacaoController
 TelaEnquete --> EnqueteController
-TelaControleRota --> RotaController
-TelaControleRota --> PontoController
+TelaControleRota --> IniciarRotaController
+TelaControleRota --> PontoAtualController
+TelaControleRota --> ProximoPontoController
 TelaVisualizacaoRota --> VisualizacaoRotaController
 TelaFinanceira --> FinanceiroController
 TelaFinanceira --> PagamentoController
 TelaFinanceira --> ComprovanteController
 TelaFinanceira --> ExportacaoController
 TelaGestaoPontos --> PontoEmbarqueController
-TelaSolicitacoes --> SolicitacaoController
-TelaAnaliseSolicitacao --> SolicitacaoController
+TelaSolicitarTroca --> SolicitacaoController
+TelaAnaliseSolicitacao --> AnaliseSolicitacaoController
 
-' ============================================
-' RELACIONAMENTOS CONTROLLER -> CONTROLLER
-' ============================================
+' ==========================================
+' RELACIONAMENTOS - CONTROLLERS E ENTIDADES
+' ==========================================
+
 CadastroController --> UsuarioFactory
-ComprovanteController --> GeradorComprovante
-ExportacaoController --> GeradorPlanilha
-RotaController --> ServicoNotificacao
-SolicitacaoController --> ServicoNotificacao
-GeradorComprovante <|.. GeradorPDF
-GeradorComprovante <|.. GeradorWord
-
-' ============================================
-' RELACIONAMENTOS CONTROLLER -> ENTITY
-' ============================================
 UsuarioFactory ..> Usuario : <<creates>>
+
+AutoCadastroController ..> Aluno : <<creates>>
+
 AutenticacaoController --> Usuario
 AutenticacaoController --> Sessao
+
 EnqueteController --> Enquete
 EnqueteController --> RespostaEnquete
 EnqueteController --> Aluno
-RotaController --> Rota
-RotaController --> Motorista
-PontoController --> Rota
-PontoController --> PontoEmbarque
-PontoController --> Aluno
+
+IniciarRotaController o--> "0..*" Observer : observers
+IniciarRotaController --> Rota
+
+PontoAtualController o--> "0..*" Observer : observers
+PontoAtualController --> Rota
+PontoAtualController --> PontoEmbarque
+
+ProximoPontoController --> Rota
+
 VisualizacaoRotaController --> Rota
-VisualizacaoRotaController --> PontoEmbarque
 VisualizacaoRotaController --> Aluno
+
 FinanceiroController --> RegistroFinanceiro
-FinanceiroController --> Aluno
 FinanceiroController --> Pagamento
+
 PagamentoController --> Aluno
 PagamentoController --> Pagamento
 PagamentoController --> RegistroFinanceiro
+
+ComprovanteController --> GeradorComprovante
 ComprovanteController --> Pagamento
-ComprovanteController --> Aluno
+ComprovanteController --> Comprovante
+
+ExportacaoController --> GeradorPlanilha
 ExportacaoController --> RegistroFinanceiro
-ExportacaoController --> Aluno
+
 PontoEmbarqueController --> PontoEmbarque
 PontoEmbarqueController --> Rota
-SolicitacaoController --> Solicitacao
+
+SolicitacaoController o--> "0..*" Observer : observers
 SolicitacaoController --> Aluno
-SolicitacaoController --> Motorista
 SolicitacaoController --> PontoEmbarque
-GeradorPDF ..> Comprovante : <<creates>>
-GeradorWord ..> Comprovante : <<creates>>
+SolicitacaoController ..> Solicitacao : <<creates>>
 
-' ============================================
-' RELACIONAMENTOS ENTITY - GENERALIZAÇÃO
-' ============================================
-Usuario <|-- Administrador
-Usuario <|-- Aluno
-Usuario <|-- Motorista
-Usuario <|-- Secretaria
+AnaliseSolicitacaoController o--> "0..*" Observer : observers
+AnaliseSolicitacaoController --> Solicitacao
+AnaliseSolicitacaoController --> Aluno
 
-' ============================================
-' RELACIONAMENTOS ENTITY - COMPOSIÇÃO
-' ============================================
-Rota "1" *-- "2..*" PontoEmbarque
-Enquete "1" *-- "0..*" RespostaEnquete
-Aluno "1" *-- "1" RegistroFinanceiro
-RegistroFinanceiro "1" *-- "0..*" Pagamento
+' ==========================================
+' RELACIONAMENTOS - OBSERVERS
+' ==========================================
 
-' ============================================
-' RELACIONAMENTOS ENTITY - AGREGAÇÃO
-' ============================================
-Rota "0..*" o-- "0..*" Aluno : inscritos
+NotificacaoAlunoObserver --> ServicoNotificacao
+NotificacaoAlunoObserver --> Aluno
 
-' ============================================
-' RELACIONAMENTOS ENTITY - ASSOCIAÇÃO
-' ============================================
-Sessao "0..*" -- "1" Usuario
-Aluno "0..*" -- "1" PontoEmbarque : embarca em
-Aluno "1" -- "0..*" RespostaEnquete : responde
-Aluno "1" -- "0..*" Solicitacao : solicita
-Pagamento "1" -- "0..1" Comprovante : gera
-Solicitacao "0..*" -- "1" PontoEmbarque : ponto atual
-Solicitacao "0..*" -- "1" PontoEmbarque : ponto desejado
-Motorista "1" -- "0..*" Solicitacao : analisa
-ServicoNotificacao --> Aluno
-ServicoNotificacao --> Motorista
+NotificacaoMotoristaObserver --> ServicoNotificacao
+NotificacaoMotoristaObserver --> Motorista
+
+' ==========================================
+' RELACIONAMENTOS - GERADORES
+' ==========================================
+
+GeradorPDF --> Comprovante
+GeradorWord --> Comprovante
 
 @enduml
