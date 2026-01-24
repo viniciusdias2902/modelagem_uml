@@ -1,0 +1,23 @@
+@startuml
+start
+:Acessar tela financeira;
+:Carregar dados financeiros;
+while (Há registros financeiros?) is (sim)
+  :Obter valor pago;
+  :Obter valor devido;
+  :Obter status do registro;
+  :Obter nome do aluno;
+endwhile (não)
+:Exibir tabela financeira;
+:Filtrar pagamentos realizados;
+while (Há pagamentos realizados?) is (sim)
+  :Obter valor do pagamento;
+  :Obter status do pagamento;
+endwhile (não)
+:Exibir pagamentos realizados;
+:Filtrar pagamentos pendentes;
+:Calcular saldo devedor;
+:Exibir pagamentos pendentes;
+:Exibir tabela completa à secretária;
+stop
+@enduml

@@ -1,0 +1,19 @@
+@startuml
+start
+:Acessar tela de controle de rota;
+:Consultar próximo ponto;
+:Buscar rota no repositório;
+:Obter ponto atual da rota;
+if (Ponto atual definido?) then (sim)
+  :Calcular próximo ponto;
+  if (Existe próximo ponto?) then (sim)
+    :Exibir ponto atual;
+    :Exibir próximo ponto;
+  else (não)
+    :Exibir mensagem de último ponto;
+  endif
+else (não)
+  :Exibir erro solicitando atualização do ponto atual;
+endif
+stop
+@enduml

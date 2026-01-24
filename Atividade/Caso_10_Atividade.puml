@@ -1,0 +1,23 @@
+@startuml
+start
+:Acessar tela financeira;
+:Carregar lista de alunos;
+while (Há alunos?) is (sim)
+  :Obter nome do aluno;
+endwhile (não)
+:Exibir lista de alunos;
+:Selecionar aluno;
+:Obter aluno selecionado;
+:Informar valor do pagamento;
+:Informar data do pagamento;
+:Obter valor informado;
+:Obter data informada;
+:Criar novo pagamento;
+:Obter registro financeiro do aluno;
+:Adicionar pagamento ao registro;
+:Atualizar saldo do aluno;
+:Calcular novo saldo;
+:Atualizar status do registro;
+:Exibir confirmação de pagamento;
+stop
+@enduml

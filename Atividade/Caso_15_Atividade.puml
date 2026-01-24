@@ -1,0 +1,48 @@
+@startuml
+start
+:Acessar tela de análise de solicitações;
+:Carregar solicitações pendentes;
+:Buscar solicitações com status PENDENTE;
+:Exibir lista de solicitações ao motorista;
+:Selecionar solicitação;
+:Exibir detalhes da solicitação;
+:Informar decisão;
+:Obter decisão do motorista;
+if (Decisão?) then (aprovar)
+  :Aprovar solicitação;
+  :Atualizar status para APROVADA;
+  :Registrar data da decisão;
+  :Obter aluno da solicitação;
+  :Obter novo ponto desejado;
+  :Atualizar ponto de embarque do aluno;
+  :Salvar solicitação no repositório;
+  fork
+    :Criar evento SOLICITACAO_APROVADA;
+    :Notificar observers;
+    while (Há observers registrados?) is (sim)
+      :Enviar notificação de aprovação ao aluno;
+    endwhile (não)
+  fork again
+    :Exibir confirmação de aprovação;
+  end fork
+else (rejeitar)
+  :Solicitar motivo da rejeição;
+  :Informar motivo;
+  :Obter motivo da rejeição;
+  :Rejeitar solicitação;
+  :Atualizar status para REJEITADA;
+  :Registrar motivo da rejeição;
+  :Registrar data da decisão;
+  :Salvar solicitação no repositório;
+  fork
+    :Criar evento SOLICITACAO_REJEITADA;
+    :Notificar observers;
+    while (Há observers registrados?) is (sim)
+      :Enviar notificação de rejeição ao aluno;
+    endwhile (não)
+  fork again
+    :Exibir confirmação de rejeição;
+  end fork
+endif
+stop
+@enduml

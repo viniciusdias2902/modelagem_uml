@@ -1,0 +1,24 @@
+@startuml
+start
+:Acessar tela de controle de rota;
+:Carregar pontos da rota;
+:Buscar rota no repositório;
+:Obter lista de pontos;
+:Exibir lista de pontos ao motorista;
+:Selecionar ponto atual;
+:Obter ponto selecionado;
+:Atualizar ponto atual da rota;
+:Salvar rota no repositório;
+fork
+  :Criar evento de atualização de posição;
+  :Notificar observers;
+  while (Há observers registrados?) is (sim)
+    :Obter alunos da rota;
+    :Enviar notificação de posição aos alunos;
+  endwhile (não)
+fork again
+  :Exibir ponto atual atualizado;
+  :Exibir confirmação ao motorista;
+end fork
+stop
+@enduml

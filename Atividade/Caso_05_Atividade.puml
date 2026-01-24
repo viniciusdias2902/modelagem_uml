@@ -1,0 +1,28 @@
+@startuml
+start
+:Acessar tela de controle de rota;
+:Carregar rota da data;
+:Buscar rota no repositório;
+:Exibir rota ao motorista;
+:Exibir botão de iniciar;
+:Clicar em iniciar rota;
+:Obter status da rota;
+if (Status é NÃO INICIADA?) then (sim)
+  :Atualizar status para EM ANDAMENTO;
+  :Registrar hora de início;
+  :Salvar rota no repositório;
+  fork
+    :Criar evento ROTA_INICIADA;
+    :Notificar observers;
+    while (Há observers registrados?) is (sim)
+      :Obter alunos da rota;
+      :Enviar notificação aos alunos;
+    endwhile (não)
+  fork again
+    :Exibir confirmação ao motorista;
+  end fork
+else (não)
+  :Exibir mensagem de erro;
+endif
+stop
+@enduml

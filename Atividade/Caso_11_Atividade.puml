@@ -1,0 +1,30 @@
+@startuml
+start
+:Acessar tela financeira;
+:Exibir lista de alunos;
+:Selecionar aluno;
+:Obter aluno selecionado;
+:Carregar pagamentos do aluno;
+while (Há pagamentos?) is (sim)
+  :Obter valor do pagamento;
+  :Obter data do pagamento;
+endwhile (não)
+:Exibir pagamentos do aluno;
+:Selecionar pagamento;
+:Obter pagamento selecionado;
+:Escolher formato de exportação;
+:Obter formato escolhido;
+if (Formato?) then (PDF)
+  :Obter gerador PDF;
+else (Word)
+  :Obter gerador Word;
+endif
+:Obter dados do pagamento;
+:Obter dados do aluno;
+:Gerar comprovante;
+:Criar instância do comprovante;
+:Obter conteúdo do arquivo;
+:Disponibilizar download;
+:Exibir link de download à secretária;
+stop
+@enduml

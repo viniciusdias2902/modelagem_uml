@@ -1,0 +1,24 @@
+@startuml
+start
+:Acessar tela financeira;
+:Exibir opção de exportar;
+:Selecionar exportar;
+:Informar período desejado;
+:Obter data de início;
+:Obter data de fim;
+:Carregar dados do período;
+while (Há registros no período?) is (sim)
+  :Obter valor pago;
+  :Obter valor devido;
+  :Obter status do registro;
+  :Obter nome do aluno;
+endwhile (não)
+:Confirmar exportação;
+:Gerar planilha com os dados;
+:Criar arquivo da planilha;
+:Adicionar cabeçalho;
+:Adicionar linhas com registros;
+:Disponibilizar download;
+:Exibir link de download à secretária;
+stop
+@enduml

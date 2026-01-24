@@ -1,0 +1,29 @@
+@startuml
+start
+:Acessar tela de cadastro;
+:Exibir formulário;
+:Preencher dados do usuário;
+:Obter dados preenchidos;
+:Validar dados;
+if (Dados válidos?) then (sim)
+  :Buscar usuário por email;
+  if (Email já cadastrado?) then (sim)
+    :Exibir mensagem de erro;
+    stop
+  else (não)
+    :Identificar tipo de usuário;
+    if (Tipo?) then (Aluno)
+      :Criar instância de Aluno;
+    else if (Tipo?) then (Motorista)
+      :Criar instância de Motorista;
+    else (Secretária)
+      :Criar instância de Secretária;
+    endif
+    :Salvar usuário no repositório;
+    :Exibir mensagem de sucesso;
+  endif
+else (não)
+  :Exibir mensagem de erro;
+endif
+stop
+@enduml
