@@ -7,27 +7,26 @@ actor "Usuário" as Usuario
 actor "Motorista" as Motorista
 actor "Secretária" as Secretaria
 
-rectangle Sistema {
-    usecase "Cadastrar Usuário" as UC01
-    usecase "Realizar Cadastro" as UC02
-    usecase "Realizar Login" as UC03
-    usecase "Responder Enquete" as UC04
-    usecase "Iniciar Rota" as UC05
-    usecase "Atualizar Ponto Atual" as UC06
-    usecase "Informar Próximo Ponto" as UC07
-    usecase "Visualizar Rota" as UC08
-    usecase "Visualizar Tabela de\nMensalidades dos Alunos" as UC09
-    usecase "Atualizar Pagamento" as UC10
-    usecase "Gerar Comprovante" as UC11
-    usecase "Exportar como PDF" as UC11a
-    usecase "Exportar como Word" as UC11b
-    usecase "Exportar Dados Financeiros\nComo Planilha" as UC12
-    usecase "Cadastrar Ponto de Embarque" as UC13
-    usecase "Solicitar Troca de\nPonto de Embarque" as UC14
-    usecase "Analisar Solicitação\nde Troca" as UC15
-    usecase "Aprovar Solicitação" as UC15a
-    usecase "Rejeitar Solicitação" as UC15b
-}
+usecase "Cadastrar Usuário" as UC01
+usecase "Realizar Cadastro" as UC02
+usecase "Realizar Login" as UC03
+usecase "Responder Enquete" as UC04
+usecase "Iniciar Rota" as UC05
+usecase "Atualizar Ponto Atual" as UC06
+usecase "Informar Próximo Ponto" as UC07
+usecase "Visualizar Rota" as UC08
+usecase "Visualizar Tabela de\nMensalidades dos Alunos" as UC09
+usecase "Atualizar Pagamento" as UC10
+usecase "Gerar Comprovante" as UC11
+usecase "Exportar como PDF" as UC11a
+usecase "Exportar como Word" as UC11b
+usecase "Exportar Dados Financeiros\nComo Planilha" as UC12
+usecase "Cadastrar Ponto de Embarque" as UC13
+usecase "Solicitar Troca de\nPonto de Embarque" as UC14
+usecase "Analisar Solicitação\nde Troca" as UC15
+usecase "Aprovar Solicitação" as UC15a
+usecase "Rejeitar Solicitação" as UC15b
+
 
 Administrador --> UC01
 Administrador --> UC13

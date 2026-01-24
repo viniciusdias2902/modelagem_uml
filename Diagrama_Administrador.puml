@@ -3,10 +3,8 @@ left to right direction
 
 actor "Administrador" as Administrador
 
-rectangle Sistema {
-    usecase "Cadastrar Usuário" as UC01
-    usecase "Cadastrar Ponto de Embarque" as UC13
-}
+usecase "Cadastrar Usuário" as UC01
+usecase "Cadastrar Ponto de Embarque" as UC13
 
 Administrador --> UC01
 Administrador --> UC13

@@ -3,14 +3,13 @@ left to right direction
 
 actor "Motorista" as Motorista
 
-rectangle Sistema {
-    usecase "Iniciar Rota" as UC05
-    usecase "Atualizar Ponto Atual" as UC06
-    usecase "Informar Próximo Ponto" as UC07
-    usecase "Analisar Solicitação\nde Troca" as UC15
-    usecase "Aprovar Solicitação" as UC15a
-    usecase "Rejeitar Solicitação" as UC15b
-}
+usecase "Iniciar Rota" as UC05
+usecase "Atualizar Ponto Atual" as UC06
+usecase "Informar Próximo Ponto" as UC07
+usecase "Analisar Solicitação\nde Troca" as UC15
+usecase "Aprovar Solicitação" as UC15a
+usecase "Rejeitar Solicitação" as UC15b
+
 
 Motorista --> UC05
 Motorista --> UC06

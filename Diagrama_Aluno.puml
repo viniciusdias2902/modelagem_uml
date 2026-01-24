@@ -3,12 +3,11 @@ left to right direction
 
 actor "Aluno" as Aluno
 
-rectangle Sistema {
-    usecase "Realizar Cadastro" as UC02
-    usecase "Responder Enquete" as UC04
-    usecase "Visualizar Rota" as UC08
-    usecase "Solicitar Troca de\nPonto de Embarque" as UC14
-}
+usecase "Realizar Cadastro" as UC02
+usecase "Responder Enquete" as UC04
+usecase "Visualizar Rota" as UC08
+usecase "Solicitar Troca de\nPonto de Embarque" as UC14
+
 
 Aluno --> UC02
 Aluno --> UC04
