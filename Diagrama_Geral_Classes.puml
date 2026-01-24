@@ -31,13 +31,13 @@ package "Interfaces" {
 ' ==========================================
 
 package "Enumerations" {
-    enum StatusRota {
+    enum StatusRota <<entity>> {
         NAO_INICIADA
         EM_ANDAMENTO
         FINALIZADA
     }
 
-    enum StatusSolicitacao {
+    enum StatusSolicitacao <<entity>> {
         PENDENTE
         APROVADA
         REJEITADA
@@ -110,19 +110,19 @@ package "Observer Pattern" {
 }
 
 ' ==========================================
-' STRATEGY PATTERN
+' Abstract Factory
 ' ==========================================
 
-package "Strategy Pattern" {
-    class GeradorPDF {
+package "Abstract Factory" {
+    class GeradorPDF <<controller>> {
         +gerar(pagamento: Pagamento): Arquivo
     }
 
-    class GeradorWord {
+    class GeradorWord <<controller>> {
         +gerar(pagamento: Pagamento): Arquivo
     }
 
-    class GeradorPlanilha {
+    class GeradorPlanilha <<controller>> {
         +criar(dados: List): Arquivo
         +adicionarCabecalho()
         +adicionarLinhas(registros: List)
@@ -331,8 +331,10 @@ package "Boundaries" {
         +exibirRota(rota: Rota)
         +exibirBotaoIniciar()
         +exibirListaPontos(pontos: List)
+        +obterPontoSelecionado(): PontoEmbarque
         +exibirPontoAtual(ponto: PontoEmbarque)
         +exibirProximoPonto(ponto: PontoEmbarque)
+        +exibirMensagemUltimoPonto()
         +exibirConfirmacao(msg: String)
         +exibirErro(msg: String)
     }
@@ -346,9 +348,15 @@ package "Boundaries" {
     class TelaFinanceira <<boundary>> {
         +exibirTabelaFinanceira()
         +exibirListaAlunos()
+        +obterAlunoSelecionado(): Aluno
         +exibirPagamentos(aluno: Aluno)
+        +obterValorPagamento(): Decimal
+        +obterDataPagamento(): Date
         +obterFormatoEscolhido(): String
         +obterPeriodo()
+        +exibirOpcaoExportar()
+        +exibirPagamentosRealizados()
+        +exibirPagamentosPendentes()
         +disponibilizarDownload(arquivo: Arquivo)
         +exibirConfirmacao()
     }
@@ -375,6 +383,7 @@ package "Boundaries" {
         +obterDecisao(): String
         +obterMotivoRejeicao(): String
         +exibirConfirmacao(msg: String)
+        +exibirErro(msg: String)
     }
 
     class ServicoNotificacao <<boundary>> {
@@ -508,7 +517,7 @@ GeradorComprovante <|.. GeradorPDF
 GeradorComprovante <|.. GeradorWord
 
 ' ==========================================
-' RELACIONAMENTOS - ENTIDADES
+' RELACIONAMENTOS - ENTITIES
 ' ==========================================
 
 Aluno --> PontoEmbarque : pontoEmbarque
@@ -525,6 +534,7 @@ RegistroFinanceiro --> Aluno
 
 Pagamento --> Aluno
 
+Enquete --> "0..*" RespostaEnquete
 RespostaEnquete --> Aluno
 
 Solicitacao --> Aluno
@@ -596,20 +606,27 @@ VisualizacaoRotaController --> Aluno
 
 FinanceiroController --> RegistroFinanceiro
 FinanceiroController --> Pagamento
+FinanceiroController --> Secretaria
 
 PagamentoController --> Aluno
 PagamentoController --> Pagamento
 PagamentoController --> RegistroFinanceiro
+PagamentoController --> Secretaria
 
 ComprovanteController --> GeradorComprovante
 ComprovanteController --> Pagamento
 ComprovanteController --> Comprovante
+ComprovanteController --> Secretaria
+ComprovanteController --> Aluno
 
 ExportacaoController --> GeradorPlanilha
 ExportacaoController --> RegistroFinanceiro
+ExportacaoController --> Secretaria
+ExportacaoController --> Aluno
 
 PontoEmbarqueController --> PontoEmbarque
 PontoEmbarqueController --> Rota
+PontoEmbarqueController --> Administrador
 
 SolicitacaoController o--> "0..*" Observer : observers
 SolicitacaoController --> Aluno
