@@ -1,0 +1,58 @@
+@startuml
+left to right direction
+
+actor "Administrador" as Administrador
+actor "Aluno" as Aluno
+actor "Usuário" as Usuario
+actor "Motorista" as Motorista
+actor "Secretária" as Secretaria
+
+rectangle Sistema {
+    usecase "Cadastrar Usuário" as UC01
+    usecase "Realizar Cadastro" as UC02
+    usecase "Realizar Login" as UC03
+    usecase "Responder Enquete" as UC04
+    usecase "Iniciar Rota" as UC05
+    usecase "Atualizar Ponto Atual" as UC06
+    usecase "Informar Próximo Ponto" as UC07
+    usecase "Visualizar Rota" as UC08
+    usecase "Visualizar Tabela de\nMensalidades dos Alunos" as UC09
+    usecase "Atualizar Pagamento" as UC10
+    usecase "Gerar Comprovante" as UC11
+    usecase "Exportar como PDF" as UC11a
+    usecase "Exportar como Word" as UC11b
+    usecase "Exportar Dados Financeiros\nComo Planilha" as UC12
+    usecase "Cadastrar Ponto de Embarque" as UC13
+    usecase "Solicitar Troca de\nPonto de Embarque" as UC14
+    usecase "Analisar Solicitação\nde Troca" as UC15
+    usecase "Aprovar Solicitação" as UC15a
+    usecase "Rejeitar Solicitação" as UC15b
+}
+
+Administrador --> UC01
+Administrador --> UC13
+
+Aluno --> UC02
+Aluno --> UC04
+Aluno --> UC08
+Aluno --> UC14
+
+Usuario --> UC03
+
+Motorista --> UC05
+Motorista --> UC06
+Motorista --> UC07
+Motorista --> UC15
+
+Secretaria --> UC09
+Secretaria --> UC10
+Secretaria --> UC11
+Secretaria --> UC12
+
+UC11 <.. UC11a : <<extend>>
+UC11 <.. UC11b : <<extend>>
+
+UC15 <.. UC15a : <<extend>>
+UC15 <.. UC15b : <<extend>>
+
+@enduml
