@@ -1,0 +1,13 @@
+@startuml
+start
+:Acessar controle de rota;
+:Visualizar pontos da rota;
+:Selecionar ponto atual;
+:Confirmar atualização;
+fork
+  :Notificar alunos sobre localização;
+fork again
+  :Exibir ponto atualizado;
+end fork
+stop
+@enduml

@@ -1,0 +1,10 @@
+@startuml
+start
+:Acessar visualização de rota;
+:Carregar rota e pontos;
+:Exibir mapa com trajeto;
+:Exibir lista de pontos ordenados;
+:Identificar ponto de embarque do aluno;
+:Destacar ponto do aluno;
+stop
+@enduml

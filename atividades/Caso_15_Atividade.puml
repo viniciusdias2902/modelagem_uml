@@ -1,0 +1,26 @@
+@startuml
+start
+:Acessar análise de solicitações;
+:Visualizar solicitações pendentes;
+:Selecionar solicitação;
+:Visualizar detalhes da solicitação;
+:Informar decisão;
+if (Decisão?) then (aprovar)
+  :Aprovar solicitação;
+  :Atualizar ponto de embarque do aluno;
+  fork
+    :Notificar aluno sobre aprovação;
+  fork again
+    :Confirmar aprovação;
+  end fork
+else (rejeitar)
+  :Informar motivo da rejeição;
+  :Rejeitar solicitação;
+  fork
+    :Notificar aluno sobre rejeição;
+  fork again
+    :Confirmar rejeição;
+  end fork
+endif
+stop
+@enduml

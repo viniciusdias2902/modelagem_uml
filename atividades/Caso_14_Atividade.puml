@@ -1,0 +1,24 @@
+@startuml
+start
+:Acessar solicitação de troca;
+:Visualizar pontos disponíveis;
+:Selecionar novo ponto desejado;
+:Informar justificativa;
+:Confirmar solicitação;
+if (Ponto diferente do atual?) then (sim)
+  if (Já possui solicitação pendente?) then (sim)
+    :Informar solicitação pendente existente;
+    stop
+  else (não)
+    :Registrar solicitação de troca;
+    fork
+      :Notificar motorista;
+    fork again
+      :Confirmar solicitação enviada;
+    end fork
+  endif
+else (não)
+  :Informar ponto igual ao atual;
+endif
+stop
+@enduml

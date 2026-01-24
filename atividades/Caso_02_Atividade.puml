@@ -1,0 +1,17 @@
+@startuml
+start
+:Acessar página de cadastro;
+:Preencher dados pessoais;
+if (Dados válidos?) then (sim)
+  if (Email já existe?) then (sim)
+    :Informar email duplicado;
+    stop
+  else (não)
+    :Registrar novo aluno;
+    :Confirmar cadastro realizado;
+  endif
+else (não)
+  :Informar dados inválidos;
+endif
+stop
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+start
+:Acessar enquete do dia;
+if (Enquete disponível?) then (sim)
+  :Visualizar enquete;
+  :Selecionar data de viagem;
+  :Selecionar opção de trajeto;
+  :Confirmar resposta;
+  :Atualizar lista de embarque;
+  :Exibir confirmação;
+else (não)
+  :Informar enquete indisponível;
+endif
+stop
+@enduml

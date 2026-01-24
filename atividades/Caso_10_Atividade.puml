@@ -1,0 +1,12 @@
+@startuml
+start
+:Acessar área financeira;
+:Visualizar lista de alunos;
+:Selecionar aluno;
+:Informar valor do pagamento;
+:Informar data do pagamento;
+:Registrar pagamento;
+:Atualizar saldo do aluno;
+:Confirmar pagamento registrado;
+stop
+@enduml

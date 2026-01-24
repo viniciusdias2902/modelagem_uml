@@ -1,0 +1,23 @@
+@startuml
+start
+:Acessar cadastro de usuários;
+:Preencher dados do usuário;
+if (Dados válidos?) then (sim)
+  if (Email já existe?) then (sim)
+    :Informar email duplicado;
+    stop
+  else (não)
+    if (Tipo de usuário?) then (Aluno)
+      :Registrar como Aluno;
+    else if (Tipo de usuário?) then (Motorista)
+      :Registrar como Motorista;
+    else (Secretária)
+      :Registrar como Secretária;
+    endif
+    :Confirmar cadastro realizado;
+  endif
+else (não)
+  :Informar dados inválidos;
+endif
+stop
+@enduml

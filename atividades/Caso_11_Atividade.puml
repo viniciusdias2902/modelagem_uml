@@ -1,0 +1,15 @@
+@startuml
+start
+:Acessar área financeira;
+:Selecionar aluno;
+:Visualizar pagamentos do aluno;
+:Selecionar pagamento;
+:Escolher formato do comprovante;
+if (Formato?) then (PDF)
+  :Gerar comprovante em PDF;
+else (Word)
+  :Gerar comprovante em Word;
+endif
+:Disponibilizar download;
+stop
+@enduml

@@ -1,0 +1,17 @@
+@startuml
+start
+:Acessar controle de rota;
+:Visualizar rota do dia;
+:Solicitar início da rota;
+if (Rota não iniciada?) then (sim)
+  :Registrar início da rota;
+  fork
+    :Notificar alunos sobre início;
+  fork again
+    :Confirmar rota iniciada;
+  end fork
+else (não)
+  :Informar rota já iniciada;
+endif
+stop
+@enduml

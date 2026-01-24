@@ -1,0 +1,11 @@
+@startuml
+start
+:Acessar área financeira;
+:Solicitar exportação de dados;
+:Informar período desejado;
+:Carregar dados do período;
+:Confirmar exportação;
+:Gerar planilha com dados financeiros;
+:Disponibilizar download;
+stop
+@enduml

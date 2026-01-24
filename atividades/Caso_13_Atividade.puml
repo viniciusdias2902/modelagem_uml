@@ -1,0 +1,14 @@
+@startuml
+start
+:Acessar gestão de pontos;
+:Preencher dados do ponto;
+if (Dados válidos?) then (sim)
+  :Registrar novo ponto de embarque;
+  :Adicionar ponto à rota;
+  :Reordenar pontos da rota;
+  :Confirmar cadastro realizado;
+else (não)
+  :Informar dados inválidos;
+endif
+stop
+@enduml

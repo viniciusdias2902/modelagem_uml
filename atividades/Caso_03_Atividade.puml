@@ -1,0 +1,16 @@
+@startuml
+start
+:Acessar página de login;
+:Informar email e senha;
+if (Usuário existe?) then (sim)
+  if (Senha correta?) then (sim)
+    :Iniciar sessão;
+    :Redirecionar para área do usuário;
+  else (não)
+    :Informar credenciais inválidas;
+  endif
+else (não)
+  :Informar credenciais inválidas;
+endif
+stop
+@enduml

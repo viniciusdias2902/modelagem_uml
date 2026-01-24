@@ -1,0 +1,11 @@
+@startuml
+start
+:Acessar área financeira;
+:Carregar dados financeiros dos alunos;
+:Exibir tabela de mensalidades;
+:Filtrar pagamentos realizados;
+:Exibir pagamentos realizados;
+:Filtrar pagamentos pendentes;
+:Exibir pagamentos pendentes;
+stop
+@enduml
