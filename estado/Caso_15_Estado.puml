@@ -1,0 +1,33 @@
+@startuml
+skinparam state {
+  BackgroundColor White
+  BorderColor Black
+}
+
+state "PENDENTE" as Pendente
+state "APROVADA" as Aprovada
+state "REJEITADA" as Rejeitada
+
+[*] --> Pendente
+
+Pendente : entry / carregarSolicitacoes()
+Pendente : do / aguardarDecisao()
+
+Pendente --> Aprovada : aprovar() / notificarAluno(APROVADA)
+note on link
+  <b>Evento:</b> Motorista aprova a troca
+  <b>Ação:</b> notificar aluno e atyalizar ponto
+end note
+
+Pendente --> Rejeitada : rejeitar(motivo) / notificarAluno(REJEITADA)
+note on link
+  <b>Evento:</b> Motorista recusa
+  <b>Ação:</b> Registra e notifica motivo da recusa
+end note
+
+Aprovada : entry / aluno.setPontoEmbarque(novoPonto)
+Rejeitada : entry / registrarMotivo()
+
+Aprovada --> [*]
+Rejeitada --> [*]
+@enduml

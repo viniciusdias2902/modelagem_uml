@@ -1,0 +1,36 @@
+@startuml
+skinparam state {
+  BackgroundColor White
+  BorderColor Black
+}
+
+state "PENDENTE" as Pendente
+state "QUITADO" as Quitado
+state c <<choice>>
+
+[*] --> Pendente
+
+Pendente : do / aguardarPagamento()
+
+Pendente --> c : registrarPagamento(valor, data) / calcularSaldo()
+note on link
+  <b>Evento:</b> secretaria registra um pagamento
+  <b>Ação:</b> sistema calcula o saldo devedor
+end note
+
+c --> Pendente : [saldoDevido > 0]
+note on link
+  <b>Pagamento Parcial</b>
+  O status permanece
+  pendente.
+end note
+
+c --> Quitado : [saldoDevido <= 0]
+note on link
+  <b>Pagamento Total</b>
+  Dívida quitada.
+end note
+
+Quitado : entry / atualizarStatus("QUITADO")
+Quitado --> [*]
+@enduml

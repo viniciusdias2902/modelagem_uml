@@ -1,0 +1,30 @@
+@startuml
+skinparam state {
+  BackgroundColor White
+  BorderColor Black
+}
+
+state "NAO_INICIADA" as NaoIniciada
+state "EM_ANDAMENTO" as EmAndamento
+state "FINALIZADA" as Finalizada
+
+[*] --> NaoIniciada
+
+NaoIniciada : entry / carregarRota(data)
+
+NaoIniciada --> EmAndamento : iniciar [status == NAO_INICIADA] / notificarAlunos()
+note on link
+  <b>Gatilho:</b> o mptorista clica em 'Iniciar Viagem'
+  <b>Guarda:</b> Rota não pode ter sido iniciada
+  <b>Açao:</b> Atualiza status e notifica (Observer)
+end note
+
+EmAndamento : entry / registrarHoraInicio()
+EmAndamento : do / monitorarTrajeto()
+
+EmAndamento --> Finalizada : finalizar()
+note on link
+  atividade no estado Em Andamento pra monitorar o trajeto
+end note
+Finalizada --> [*]
+@enduml
