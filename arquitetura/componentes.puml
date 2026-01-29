@@ -1,0 +1,146 @@
+@startuml Componentes_Camadas
+
+!define LIGHTBLUE #E3F2FD
+!define LIGHTGREEN #E8F5E9
+!define LIGHTYELLOW #FFF9C4
+!define LIGHTPINK #FCE4EC
+
+rectangle "==CAMADA DE APRESENTAÇÃO==\n<size:10>(Frontend - Vue.js 3)</size>" LIGHTBLUE {
+  
+  package "Components" {
+    component [Páginas\n(Views)] as PAGES
+    component [Componentes\nDaisyUI] as DAISY
+    component [Composables] as COMPOSABLES
+  }
+  
+  package "Routing & Services" {
+    component [Vue Router] as ROUTER
+    component [API Client\n(Axios)] as AXIOS
+  }
+  
+  interface "IFrontendAPI" as IAPI
+  AXIOS -up- IAPI
+}
+
+rectangle "==CAMADA DE APLICAÇÃO==\n<size:10>(Django REST Framework)</size>" LIGHTGREEN {
+  
+  package "API Layer" {
+    component [ViewSets\nDRF] as VIEWSETS
+    component [Serializers] as SERIALIZERS
+    component [Authentication\n(JWT)] as AUTH
+    component [Permissions] as PERMS
+    component [Filters &\nPagination] as FILTERS
+  }
+  
+  package "Services & Use Cases" {
+    component [Services] as SERVICES
+    component [Use Cases] as USECASES
+  }
+  
+  interface "IAPI DRF" as IAPI_DRF
+  VIEWSETS -up- IAPI_DRF
+}
+
+rectangle "==CAMADA DE DOMÍNIO==\n<size:10>(Entities & Business Logic)</size>" LIGHTYELLOW {
+  
+  component [Models\n(Entities)] as MODELS
+  component [Managers\nCustomizados] as MANAGERS
+  component [Model\nMethods] as MODEL_METHODS
+  component [Signals\nDjango] as SIGNALS
+  
+  interface "IDomain" as IDOMAIN
+  MODELS -up- IDOMAIN
+}
+
+rectangle "==CAMADA DE PERSISTÊNCIA==\n<size:10>(Infrastructure)</size>" LIGHTPINK {
+  
+  component [Django ORM] as ORM
+  component [Factories &\nFixtures] as FACTORIES
+  
+  package "Document Generation" {
+    component [ReportLab\n(PDF)] as PDF
+    component [python-docx\n(Word)] as WORD
+    component [openpyxl\n(Excel)] as EXCEL
+  }
+  
+  interface "IRepository" as IREPO
+  interface "IDocGenerator" as IDOC
+  
+  ORM -up- IREPO
+  PDF -up- IDOC
+}
+
+database "PostgreSQL\n<size:10>(Banco de Dados)</size>" as POSTGRES
+
+' Dependências entre camadas
+IAPI )-- IAPI_DRF : "REST API\nHTTPS/JSON\n+ JWT Token"
+
+VIEWSETS ..> AUTH : valida token
+VIEWSETS ..> SERVICES : usa
+VIEWSETS ..> SERIALIZERS : usa
+SERIALIZERS ..> MODELS : serializa
+
+SERVICES ..> MODELS : coordena
+SERVICES ..> MANAGERS : consulta
+USECASES ..> MODELS : orquestra
+
+MODELS ..> ORM : persiste via
+SIGNALS ..> SERVICES : dispara
+
+ORM ..> POSTGRES : SQL
+SERVICES ..> PDF : gera documentos
+SERVICES ..> WORD : gera documentos
+SERVICES ..> EXCEL : gera documentos
+
+' Notas explicativas
+note right of ROUTER
+  <b>Vue Router 4</b>
+  - Rotas por perfil
+  - Guards de autenticação
+  - Lazy loading
+end note
+
+note right of AXIOS
+  <b>API Client</b>
+  - Interceptors para JWT
+  - Armazena tokens
+  - Refresh automático
+end note
+
+note right of AUTH
+  <b>JWT Authentication</b>
+  - Gera access token
+  - Gera refresh token
+  - Valida tokens
+  - djangorestframework-simplejwt
+end note
+
+note right of VIEWSETS
+  <b>DRF ViewSets</b>
+  - Endpoints REST
+  - CRUD operations
+  - Custom @actions
+end note
+
+note right of SERVICES
+  <b>Services Layer</b>
+  - Lógica complexa
+  - Coordenação
+  - Transações
+end note
+
+note right of MODELS
+  <b>Domain Models</b>
+  - Entidades de negócio
+  - Regras de domínio
+  - Information Expert
+end note
+
+note right of ORM
+  <b>Django ORM</b>
+  - Abstração SQL
+  - Migrations
+  - QuerySets
+end note
+
+@enduml

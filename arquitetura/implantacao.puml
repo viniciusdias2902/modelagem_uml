@@ -1,0 +1,104 @@
+@startuml
+
+skinparam componentStyle rectangle
+
+actor "Cliente Web\n(Navegador)" as WEB
+actor "Cliente Mobile\n(PWA/WebView)" as MOBILE
+
+node "Container: Nginx" as NGINX_NODE {
+  component "Nginx Web Server" as NGINX
+  component "Static Files\n(Vue.js build)" as STATIC
+}
+
+node "Container: Django/Gunicorn" as DJANGO_NODE {
+  component "Gunicorn WSGI" as GUNICORN
+  component "Django REST Framework" as DRF
+  component "Services & Models" as SERVICES
+  component "Document Generators" as DOCS
+  component "JWT Authentication" as JWT
+}
+
+node "Container: PostgreSQL" as DB_NODE {
+  database "PostgreSQL\nDatabase" as DB
+}
+
+storage "Volume: Media/Static" as VOLUME
+
+cloud "Rede Docker Privada\n(app_network)" as NETWORK
+
+WEB -down-> NGINX : "HTTPS\n(público)"
+MOBILE -down-> NGINX : "HTTPS\n(público)"
+
+NGINX -down-> GUNICORN : "HTTP\n(proxy reverso)"
+NGINX .down.> STATIC : "serve arquivos"
+
+GUNICORN -down-> DRF
+GUNICORN -down-> JWT
+DRF -down-> SERVICES
+SERVICES -down-> DOCS
+
+DRF -right-> DB : "SQL"
+SERVICES -right-> DB : "ORM"
+
+DOCS -down-> VOLUME : "write\n(PDFs, Excel)"
+NGINX -down-> VOLUME : "read\n(media)"
+
+NGINX_NODE -[hidden]down- NETWORK
+DJANGO_NODE -[hidden]down- NETWORK
+DB_NODE -[hidden]down- NETWORK
+
+note right of NGINX_NODE
+  <b>nginx:alpine</b>
+  Portas: 80, 443 (expostas)
+  
+  Responsabilidades:
+  - Serve build Vue.js
+  - Proxy para Django
+  - SSL/TLS
+  - Compressão Gzip
+end note
+
+note right of DJANGO_NODE
+  <b>python:3.11</b>
+  Porta: 8000 (interna)
+  
+  Responsabilidades:
+  - API REST (ViewSets)
+  - Autenticação JWT
+  - Lógica de negócio
+  - Geração de documentos
+  - 4 workers Gunicorn
+end note
+
+note right of DB_NODE
+  <b>postgres:15</b>
+  Porta: 5432 (interna)
+  
+  Responsabilidades:
+  - Armazenamento de dados
+  - Volume persistente
+  - Rede privada apenas
+  - Backups automáticos
+end note
+
+note bottom of VOLUME
+  <b>Docker Volumes</b>
+  
+  Persistentes:
+  - media/ (PDFs, Word, Excel)
+  - static/ (CSS/JS admin)
+  - backups/ (dumps DB)
+  
+  Montados nos containers
+end note
+
+note bottom of NETWORK
+  <b>Isolamento de Rede</b>
+  
+  - Containers comunicam por nome
+  - Apenas Nginx exposto publicamente
+  - Django e PostgreSQL privados
+  - Segurança por isolamento
+end note
+
+@enduml
