@@ -1,146 +1,66 @@
-@startuml Componentes_Camadas
+@startuml Subsistemas
 
-!define LIGHTBLUE #E3F2FD
-!define LIGHTGREEN #E8F5E9
-!define LIGHTYELLOW #FFF9C4
-!define LIGHTPINK #FCE4EC
-
-rectangle "==CAMADA DE APRESENTAÇÃO==\n<size:10>(Frontend - Vue.js 3)</size>" LIGHTBLUE {
-  
-  package "Components" {
-    component [Páginas\n(Views)] as PAGES
-    component [Componentes\nDaisyUI] as DAISY
-    component [Composables] as COMPOSABLES
-  }
-  
-  package "Routing & Services" {
-    component [Vue Router] as ROUTER
-    component [API Client\n(Axios)] as AXIOS
-  }
-  
-  interface "IFrontendAPI" as IAPI
-  AXIOS -up- IAPI
+package "Subsistema de Autenticação e Gestão de Usuários" <<subsystem>> as AUTH {
+  [Gestão de Usuários]
+  [Autenticação]
+  [Factory de Usuários]
 }
 
-rectangle "==CAMADA DE APLICAÇÃO==\n<size:10>(Django REST Framework)</size>" LIGHTGREEN {
-  
-  package "API Layer" {
-    component [ViewSets\nDRF] as VIEWSETS
-    component [Serializers] as SERIALIZERS
-    component [Authentication\n(JWT)] as AUTH
-    component [Permissions] as PERMS
-    component [Filters &\nPagination] as FILTERS
-  }
-  
-  package "Services & Use Cases" {
-    component [Services] as SERVICES
-    component [Use Cases] as USECASES
-  }
-  
-  interface "IAPI DRF" as IAPI_DRF
-  VIEWSETS -up- IAPI_DRF
+package "Subsistema de Gestão de Rotas e Transporte" <<subsystem>> as ROTA {
+  [Gestão de Rotas]
+  [Gestão de Pontos de Embarque]
+  [Gestão de Enquetes]
+  [Controle de Posicionamento]
 }
 
-rectangle "==CAMADA DE DOMÍNIO==\n<size:10>(Entities & Business Logic)</size>" LIGHTYELLOW {
-  
-  component [Models\n(Entities)] as MODELS
-  component [Managers\nCustomizados] as MANAGERS
-  component [Model\nMethods] as MODEL_METHODS
-  component [Signals\nDjango] as SIGNALS
-  
-  interface "IDomain" as IDOMAIN
-  MODELS -up- IDOMAIN
+package "Subsistema Financeiro" <<subsystem>> as FIN {
+  [Gestão de Pagamentos]
+  [Geração de Comprovantes]
+  [Exportação de Relatórios]
+  [Registro Financeiro]
 }
 
-rectangle "==CAMADA DE PERSISTÊNCIA==\n<size:10>(Infrastructure)</size>" LIGHTPINK {
-  
-  component [Django ORM] as ORM
-  component [Factories &\nFixtures] as FACTORIES
-  
-  package "Document Generation" {
-    component [ReportLab\n(PDF)] as PDF
-    component [python-docx\n(Word)] as WORD
-    component [openpyxl\n(Excel)] as EXCEL
-  }
-  
-  interface "IRepository" as IREPO
-  interface "IDocGenerator" as IDOC
-  
-  ORM -up- IREPO
-  PDF -up- IDOC
+package "Subsistema de Solicitações" <<subsystem>> as SOL {
+  [Criação de Solicitações]
+  [Análise de Solicitações]
+  [Gestão de Status]
 }
 
-database "PostgreSQL\n<size:10>(Banco de Dados)</size>" as POSTGRES
-
-' Dependências entre camadas
-IAPI )-- IAPI_DRF : "REST API\nHTTPS/JSON\n+ JWT Token"
-
-VIEWSETS ..> AUTH : valida token
-VIEWSETS ..> SERVICES : usa
-VIEWSETS ..> SERIALIZERS : usa
-SERIALIZERS ..> MODELS : serializa
-
-SERVICES ..> MODELS : coordena
-SERVICES ..> MANAGERS : consulta
-USECASES ..> MODELS : orquestra
-
-MODELS ..> ORM : persiste via
-SIGNALS ..> SERVICES : dispara
-
-ORM ..> POSTGRES : SQL
-SERVICES ..> PDF : gera documentos
-SERVICES ..> WORD : gera documentos
-SERVICES ..> EXCEL : gera documentos
-
-' Notas explicativas
-note right of ROUTER
-  <b>Vue Router 4</b>
-  - Rotas por perfil
-  - Guards de autenticação
-  - Lazy loading
-end note
-
-note right of AXIOS
-  <b>API Client</b>
-  - Interceptors para JWT
-  - Armazena tokens
-  - Refresh automático
-end note
+ROTA ..> AUTH : <<usa>>
+SOL ..> AUTH : <<usa>>
+SOL ..> ROTA : <<usa>>
+FIN ..> AUTH : <<usa>>
 
 note right of AUTH
-  <b>JWT Authentication</b>
-  - Gera access token
-  - Gera refresh token
-  - Valida tokens
-  - djangorestframework-simplejwt
+  <b>Responsabilidades:</b>
+  - Cadastro de usuários
+  - Auto-cadastro de alunos
+  - Autenticação e sessões
+  - Factory polimórfica
 end note
 
-note right of VIEWSETS
-  <b>DRF ViewSets</b>
-  - Endpoints REST
-  - CRUD operations
-  - Custom @actions
+note right of ROTA
+  <b>Responsabilidades:</b>
+  - Gestão de rotas e pontos
+  - Controle de trajeto
+  - Enquetes de trajeto
+  - Cálculo de próximo ponto
 end note
 
-note right of SERVICES
-  <b>Services Layer</b>
-  - Lógica complexa
-  - Coordenação
-  - Transações
+note right of FIN
+  <b>Responsabilidades:</b>
+  - Registro de pagamentos
+  - Cálculo de saldo
+  - Geração de comprovantes (PDF/Word)
+  - Exportação de planilhas
 end note
 
-note right of MODELS
-  <b>Domain Models</b>
-  - Entidades de negócio
-  - Regras de domínio
-  - Information Expert
-end note
-
-note right of ORM
-  <b>Django ORM</b>
-  - Abstração SQL
-  - Migrations
-  - QuerySets
+note right of SOL
+  <b>Responsabilidades:</b>
+  - Solicitação de troca de ponto
+  - Aprovação/rejeição por motorista
+  - Atualização de ponto do aluno
+  - Histórico de solicitações
 end note
 
 @enduml
