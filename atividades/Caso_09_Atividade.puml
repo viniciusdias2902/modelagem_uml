@@ -1,11 +1,31 @@
 @startuml
+|Secretária|
 start
 :Acessar área financeira;
+
+|Sistema|
 :Carregar dados financeiros dos alunos;
+:Processar registros financeiros;
 :Exibir tabela de mensalidades;
+
+|Secretária|
+:Visualizar tabela;
+:Solicitar filtro de pagamentos realizados;
+
+|Sistema|
 :Filtrar pagamentos realizados;
 :Exibir pagamentos realizados;
+
+|Secretária|
+:Analisar pagamentos realizados;
+:Solicitar filtro de pagamentos pendentes;
+
+|Sistema|
 :Filtrar pagamentos pendentes;
+:Calcular saldos devedores;
 :Exibir pagamentos pendentes;
+
+|Secretária|
+:Analisar pagamentos pendentes;
 stop
 @enduml

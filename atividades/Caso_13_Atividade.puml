@@ -1,14 +1,39 @@
 @startuml
+|Administrador|
 start
 :Acessar gestão de pontos;
-:Preencher dados do ponto;
-if (Dados válidos?) then (sim)
-  :Registrar novo ponto de embarque;
-  :Adicionar ponto à rota;
-  :Reordenar pontos da rota;
-  :Confirmar cadastro realizado;
-else (não)
-  :Informar dados inválidos;
-endif
+
+|Sistema|
+:Exibir formulário;
+
+|Administrador|
+repeat
+  :Preencher dados do ponto;
+  
+  |Sistema|
+  :Validar dados;
+  
+  if (Dados válidos?) then (sim)
+    :Criar novo ponto de embarque;
+    :Adicionar ponto à rota;
+    :Calcular nova ordem dos pontos;
+    :Reordenar pontos da rota;
+    :Atualizar sequência de passagem;
+    :Confirmar cadastro realizado;
+    
+    |Administrador|
+    :Visualizar confirmação;
+    stop
+  else (não)
+    :Informar dados inválidos;
+    
+    |Administrador|
+    :Visualizar mensagem de erro;
+  endif
+  
+repeat while (Deseja tentar novamente?) is (sim)
+->não;
+
+|Administrador|
 stop
 @enduml

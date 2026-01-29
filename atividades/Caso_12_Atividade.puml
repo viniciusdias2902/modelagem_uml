@@ -1,11 +1,32 @@
 @startuml
+|Secretária|
 start
 :Acessar área financeira;
 :Solicitar exportação de dados;
+
+|Sistema|
+:Exibir opção de exportação;
+
+|Secretária|
 :Informar período desejado;
+
+|Sistema|
+:Validar período;
 :Carregar dados do período;
+:Processar registros financeiros;
+
+|Secretária|
 :Confirmar exportação;
+
+|Sistema|
 :Gerar planilha com dados financeiros;
+:Adicionar cabeçalho à planilha;
+:Adicionar linhas de dados;
+:Formatar planilha;
+:Preparar arquivo para download;
 :Disponibilizar download;
+
+|Secretária|
+:Fazer download da planilha;
 stop
 @enduml

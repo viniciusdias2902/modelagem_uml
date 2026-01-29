@@ -1,16 +1,39 @@
 @startuml
+|Motorista|
 start
 :Acessar controle de rota;
 :Consultar próximo ponto;
-if (Ponto atual definido?) then (sim)
+
+|Sistema|
+:Verificar ponto atual;
+
+if (Ponto atual não definido?) then (sim)
+  :Solicitar definição do ponto atual;
+  
+  |Motorista|
+  :Visualizar solicitação;
+  stop
+else (não)
+  |Sistema|
+  :Calcular próximo ponto;
+  
   if (Existe próximo ponto?) then (sim)
+    :Obter informações do ponto atual;
+    :Obter informações do próximo ponto;
     :Exibir ponto atual;
     :Exibir próximo ponto;
+    
+    |Motorista|
+    :Visualizar pontos;
   else (não)
+    |Sistema|
     :Informar último ponto da rota;
+    
+    |Motorista|
+    :Visualizar mensagem;
   endif
-else (não)
-  :Solicitar definição do ponto atual;
+  
+  |Motorista|
+  stop
 endif
-stop
 @enduml

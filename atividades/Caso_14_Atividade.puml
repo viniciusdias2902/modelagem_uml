@@ -1,24 +1,66 @@
 @startuml
+|Aluno|
 start
 :Acessar solicitação de troca;
+
+|Sistema|
+:Carregar pontos disponíveis da rota;
+:Exibir pontos disponíveis;
+
+|Aluno|
 :Visualizar pontos disponíveis;
-:Selecionar novo ponto desejado;
-:Informar justificativa;
-:Confirmar solicitação;
-if (Ponto diferente do atual?) then (sim)
-  if (Já possui solicitação pendente?) then (sim)
-    :Informar solicitação pendente existente;
-    stop
+
+repeat
+  |Aluno|
+  :Selecionar novo ponto desejado;
+  :Informar justificativa;
+  
+  |Sistema|
+  :Validar seleção;
+  
+  if (Ponto diferente do atual?) then (sim)
+    :Verificar solicitações pendentes;
+    
+    if (Já possui solicitação pendente?) then (sim)
+      :Informar solicitação pendente existente;
+      
+      |Aluno|
+      :Visualizar mensagem;
+    else (não)
+      |Aluno|
+      :Confirmar solicitação;
+      
+      |Sistema|
+      :Criar registro de solicitação;
+      :Registrar solicitação de troca;
+      :Definir status como PENDENTE;
+      
+      fork
+        |Sistema|
+        :Notificar motorista;
+        note right: Padrão Observer
+      fork again
+        |Sistema|
+        :Confirmar solicitação enviada;
+        
+        |Aluno|
+        :Visualizar confirmação;
+      end fork
+      
+      |Aluno|
+      stop
+    endif
   else (não)
-    :Registrar solicitação de troca;
-    fork
-      :Notificar motorista;
-    fork again
-      :Confirmar solicitação enviada;
-    end fork
+    :Informar ponto igual ao atual;
+    
+    |Aluno|
+    :Visualizar mensagem;
   endif
-else (não)
-  :Informar ponto igual ao atual;
-endif
+  
+  |Aluno|
+repeat while (Deseja tentar novamente?) is (sim)
+->não;
+
+|Aluno|
 stop
 @enduml

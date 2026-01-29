@@ -1,15 +1,35 @@
 @startuml
+|Aluno|
 start
 :Acessar enquete do dia;
+
+|Sistema|
+:Verificar disponibilidade da enquete;
+
 if (Enquete disponível?) then (sim)
+  :Carregar enquete ativa;
+  :Exibir enquete;
+  
+  |Aluno|
   :Visualizar enquete;
   :Selecionar data de viagem;
   :Selecionar opção de trajeto;
   :Confirmar resposta;
+  
+  |Sistema|
+  :Registrar resposta do aluno;
   :Atualizar lista de embarque;
   :Exibir confirmação;
+  
+  |Aluno|
+  :Visualizar confirmação;
 else (não)
   :Informar enquete indisponível;
+  
+  |Aluno|
+  :Visualizar mensagem;
 endif
+
+|Aluno|
 stop
 @enduml

@@ -1,17 +1,44 @@
 @startuml
+|Motorista|
 start
 :Acessar controle de rota;
+
+|Sistema|
+:Carregar rota do dia;
+:Exibir rota;
+
+|Motorista|
 :Visualizar rota do dia;
 :Solicitar início da rota;
-if (Rota não iniciada?) then (sim)
-  :Registrar início da rota;
-  fork
-    :Notificar alunos sobre início;
-  fork again
-    :Confirmar rota iniciada;
-  end fork
-else (não)
+
+|Sistema|
+:Verificar status da rota;
+
+if (Rota já iniciada?) then (sim)
   :Informar rota já iniciada;
+  
+  |Motorista|
+  :Visualizar mensagem;
+  stop
+else (não)
+  |Sistema|
+  :Registrar início da rota;
+  :Atualizar status para EM_ANDAMENTO;
+  :Registrar hora de início;
+  
+  fork
+    |Sistema|
+    :Notificar alunos sobre início;
+    note right: Padrão Observer
+  fork again
+    |Sistema|
+    :Confirmar rota iniciada;
+    
+    |Motorista|
+    :Visualizar confirmação;
+  end fork
+  
+  |Motorista|
+  stop
 endif
-stop
 @enduml

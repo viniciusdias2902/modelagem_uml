@@ -1,10 +1,44 @@
 @startuml
+|Aluno|
 start
 :Acessar visualização de rota;
-:Carregar rota e pontos;
-:Exibir mapa com trajeto;
+
+|Sistema|
+:Carregar rota ativa;
+:Carregar pontos de embarque;
 :Exibir lista de pontos ordenados;
 :Identificar ponto de embarque do aluno;
 :Destacar ponto do aluno;
+:Obter ponto atual da rota;
+:Destacar ponto atual;
+:Calcular quantidade de pontos até o ponto do aluno;
+:Exibir quantidade de pontos restantes;
+
+|Aluno|
+:Visualizar informações da rota;
+
+|Sistema|
+repeat
+  :Aguardar atualização de posição;
+  note right: Modo monitoramento ativo
+  
+  :Receber notificação de novo ponto atual;
+  note right: Via Padrão Observer
+  
+  :Atualizar destaque do ponto atual;
+  :Recalcular quantidade de pontos restantes;
+  :Atualizar exibição em tempo real;
+  
+  |Aluno|
+  :Visualizar atualização automática;
+  
+  |Sistema|
+repeat while (Rota não finalizada?) is (sim)
+->não;
+
+:Exibir mensagem de rota finalizada;
+
+|Aluno|
+:Visualizar conclusão da rota;
 stop
 @enduml

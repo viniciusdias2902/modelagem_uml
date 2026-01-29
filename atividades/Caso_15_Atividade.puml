@@ -1,26 +1,67 @@
 @startuml
+|Motorista|
 start
-:Acessar análise de solicitações;
+:Acessar tela de análise de solicitações;
+
+|Sistema|
+:Carregar solicitações pendentes;
+:Exibir lista de solicitações pendentes;
+
+|Motorista|
 :Visualizar solicitações pendentes;
 :Selecionar solicitação;
-:Visualizar detalhes da solicitação;
+
+|Sistema|
+:Carregar detalhes da solicitação;
+:Exibir detalhes da solicitação;
+
+|Motorista|
+:Analisar solicitação;
 :Informar decisão;
+
+|Sistema|
+:Processar decisão;
+
 if (Decisão?) then (aprovar)
+  :Atualizar status para APROVADA;
+  :Registrar data da decisão;
   :Aprovar solicitação;
   :Atualizar ponto de embarque do aluno;
+  
   fork
+    |Sistema|
     :Notificar aluno sobre aprovação;
+    note right: Padrão Observer
   fork again
+    |Sistema|
     :Confirmar aprovação;
+    
+    |Motorista|
+    :Visualizar confirmação;
   end fork
 else (rejeitar)
+  |Motorista|
   :Informar motivo da rejeição;
+  
+  |Sistema|
+  :Atualizar status para REJEITADA;
+  :Registrar data da decisão;
+  :Registrar motivo da rejeição;
   :Rejeitar solicitação;
+  
   fork
+    |Sistema|
     :Notificar aluno sobre rejeição;
+    note right: Padrão Observer
   fork again
+    |Sistema|
     :Confirmar rejeição;
+    
+    |Motorista|
+    :Visualizar confirmação;
   end fork
 endif
+
+|Motorista|
 stop
 @enduml

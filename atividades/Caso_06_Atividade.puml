@@ -1,13 +1,33 @@
 @startuml
+|Motorista|
 start
 :Acessar controle de rota;
+
+|Sistema|
+:Carregar pontos da rota;
+:Exibir lista de pontos;
+
+|Motorista|
 :Visualizar pontos da rota;
 :Selecionar ponto atual;
 :Confirmar atualização;
+
+|Sistema|
+:Atualizar ponto atual da rota;
+:Registrar timestamp;
+
 fork
+  |Sistema|
   :Notificar alunos sobre localização;
+  note right: Padrão Observer
 fork again
+  |Sistema|
   :Exibir ponto atualizado;
+  
+  |Motorista|
+  :Visualizar confirmação;
 end fork
+
+|Motorista|
 stop
 @enduml

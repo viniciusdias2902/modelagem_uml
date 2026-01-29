@@ -1,0 +1,52 @@
+@startuml
+skinparam state {
+  BackgroundColor White
+  BorderColor Black
+}
+
+state "CARREGANDO" as Carregando
+state "AGUARDANDO_INICIO" as AguardandoInicio
+state "MONITORANDO_POSICAO" as MonitorandoPosicao
+state "FINALIZADA" as Finalizada
+
+[*] --> Carregando
+
+Carregando : entry / carregarRota()
+Carregando : entry / carregarPontos()
+Carregando : entry / identificarPontoAluno()
+
+Carregando --> AguardandoInicio : [rotaCarregada]
+note on link
+  <b>Evento:</b> Rota e pontos carregados
+  <b>Ação:</b> Exibir lista de pontos
+end note
+
+AguardandoInicio : entry / exibirPontos()
+AguardandoInicio : entry / destacarPontoAluno()
+AguardandoInicio : do / aguardarInicioRota()
+
+AguardandoInicio --> MonitorandoPosicao : rotaIniciada / destacarPontoAtual()
+note on link
+  <b>Evento:</b> Rota foi iniciada
+  <b>Ação:</b> Destacar ponto atual e calcular distância
+end note
+
+MonitorandoPosicao : entry / calcularPontosRestantes()
+MonitorandoPosicao : do / aguardarAtualizacaoPosicao()
+
+MonitorandoPosicao --> MonitorandoPosicao : pontoAtualizado / atualizarVisualizacao()
+note on link
+  <b>Evento:</b> Motorista atualiza ponto atual
+  <b>Ação:</b> Atualizar destaque e recalcular pontos restantes
+  <b>Observer:</b> Aluno recebe notificação de mudança
+end note
+
+MonitorandoPosicao --> Finalizada : rotaFinalizada
+note on link
+  <b>Evento:</b> Rota foi finalizada
+  <b>Ação:</b> Exibir mensagem de conclusão
+end note
+
+Finalizada : entry / exibirMensagemFinalizada()
+Finalizada --> [*]
+@enduml

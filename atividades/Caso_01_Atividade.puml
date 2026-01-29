@@ -1,23 +1,51 @@
 @startuml
+|Administrador|
 start
 :Acessar cadastro de usuários;
-:Preencher dados do usuário;
-if (Dados válidos?) then (sim)
-  if (Email já existe?) then (sim)
-    :Informar email duplicado;
-    stop
-  else (não)
-    if (Tipo de usuário?) then (Aluno)
-      :Registrar como Aluno;
-    else if (Tipo de usuário?) then (Motorista)
-      :Registrar como Motorista;
-    else (Secretária)
-      :Registrar como Secretária;
+
+|Sistema|
+:Exibir formulário;
+
+|Administrador|
+repeat
+  :Preencher dados do usuário;
+  
+  |Sistema|
+  :Validar dados;
+  
+  if (Dados válidos?) then (sim)
+    :Verificar se email existe;
+    
+    if (Email já existe?) then (sim)
+      :Informar email duplicado;
+      
+      |Administrador|
+      :Visualizar mensagem de erro;
+    else (não)
+      |Sistema|
+      if (Tipo de usuário?) then (Aluno)
+        :Registrar como Aluno;
+      else if (Tipo de usuário?) then (Motorista)
+        :Registrar como Motorista;
+      else (Secretária)
+        :Registrar como Secretária;
+      endif
+      :Confirmar cadastro realizado;
+      
+      |Administrador|
+      :Visualizar confirmação;
+      stop
     endif
-    :Confirmar cadastro realizado;
+  else (não)
+    :Informar dados inválidos;
+    
+    |Administrador|
+    :Visualizar mensagem de erro;
   endif
-else (não)
-  :Informar dados inválidos;
-endif
+  
+repeat while (Deseja tentar novamente?) is (sim)
+->não;
+
+|Administrador|
 stop
 @enduml

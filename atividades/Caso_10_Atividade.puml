@@ -1,12 +1,28 @@
 @startuml
+|Secretária|
 start
 :Acessar área financeira;
+
+|Sistema|
+:Carregar lista de alunos;
+:Exibir lista de alunos;
+
+|Secretária|
 :Visualizar lista de alunos;
 :Selecionar aluno;
 :Informar valor do pagamento;
 :Informar data do pagamento;
-:Registrar pagamento;
+:Confirmar registro;
+
+|Sistema|
+:Validar informações;
+:Criar registro de pagamento;
+:Adicionar pagamento ao registro financeiro;
 :Atualizar saldo do aluno;
+:Calcular novo status financeiro;
 :Confirmar pagamento registrado;
+
+|Secretária|
+:Visualizar confirmação;
 stop
 @enduml

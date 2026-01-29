@@ -1,16 +1,45 @@
 @startuml
+|Usuário|
 start
 :Acessar página de login;
-:Informar email e senha;
-if (Usuário existe?) then (sim)
-  if (Senha correta?) then (sim)
-    :Iniciar sessão;
-    :Redirecionar para área do usuário;
+
+|Sistema|
+:Exibir formulário de login;
+
+|Usuário|
+repeat
+  :Informar email e senha;
+  
+  |Sistema|
+  :Buscar usuário por email;
+  
+  if (Usuário existe?) then (sim)
+    :Validar senha;
+    
+    if (Senha correta?) then (sim)
+      :Iniciar sessão;
+      :Identificar perfil do usuário;
+      :Redirecionar para área do usuário;
+      
+      |Usuário|
+      :Acessar tela inicial;
+      stop
+    else (não)
+      :Informar credenciais inválidas;
+      
+      |Usuário|
+      :Visualizar mensagem de erro;
+    endif
   else (não)
     :Informar credenciais inválidas;
+    
+    |Usuário|
+    :Visualizar mensagem de erro;
   endif
-else (não)
-  :Informar credenciais inválidas;
-endif
+  
+repeat while (Deseja tentar novamente?) is (sim)
+->não;
+
+|Usuário|
 stop
 @enduml

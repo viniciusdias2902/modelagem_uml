@@ -1,15 +1,39 @@
 @startuml
+|Secretária|
 start
 :Acessar área financeira;
+
+|Sistema|
+:Carregar lista de alunos;
+:Exibir lista de alunos;
+
+|Secretária|
 :Selecionar aluno;
-:Visualizar pagamentos do aluno;
+
+|Sistema|
+:Carregar pagamentos do aluno;
+:Exibir pagamentos do aluno;
+
+|Secretária|
+:Visualizar pagamentos;
 :Selecionar pagamento;
 :Escolher formato do comprovante;
+
+|Sistema|
+:Verificar formato escolhido;
+
 if (Formato?) then (PDF)
+  :Obter gerador PDF;
   :Gerar comprovante em PDF;
 else (Word)
+  :Obter gerador Word;
   :Gerar comprovante em Word;
 endif
+
+:Preparar arquivo para download;
 :Disponibilizar download;
+
+|Secretária|
+:Fazer download do comprovante;
 stop
 @enduml

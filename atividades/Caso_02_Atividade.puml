@@ -1,17 +1,45 @@
 @startuml
+|Aluno|
 start
 :Acessar página de cadastro;
-:Preencher dados pessoais;
-if (Dados válidos?) then (sim)
-  if (Email já existe?) then (sim)
-    :Informar email duplicado;
-    stop
+
+|Sistema|
+:Exibir formulário;
+
+|Aluno|
+repeat
+  :Preencher dados pessoais;
+  
+  |Sistema|
+  :Validar dados;
+  
+  if (Dados válidos?) then (sim)
+    :Verificar se email existe;
+    
+    if (Email já existe?) then (sim)
+      :Informar email duplicado;
+      
+      |Aluno|
+      :Visualizar mensagem de erro;
+    else (não)
+      |Sistema|
+      :Registrar novo aluno;
+      :Confirmar cadastro realizado;
+      
+      |Aluno|
+      :Visualizar confirmação;
+      stop
+    endif
   else (não)
-    :Registrar novo aluno;
-    :Confirmar cadastro realizado;
+    :Informar dados inválidos;
+    
+    |Aluno|
+    :Visualizar mensagem de erro;
   endif
-else (não)
-  :Informar dados inválidos;
-endif
+  
+repeat while (Deseja tentar novamente?) is (sim)
+->não;
+
+|Aluno|
 stop
 @enduml
