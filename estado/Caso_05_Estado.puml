@@ -12,19 +12,23 @@ state "FINALIZADA" as Finalizada
 
 NaoIniciada : entry / carregarRota(data)
 
-NaoIniciada --> EmAndamento : iniciar [status == NAO_INICIADA] / notificarAlunos()
+NaoIniciada --> EmAndamento : iniciar() [status == NAO_INICIADA] / notificarAlunos()
 note on link
-  <b>Gatilho:</b> o mptorista clica em 'Iniciar Viagem'
+  <b>Evento:</b> Motorista clica em 'Iniciar Viagem'
   <b>Guarda:</b> Rota não pode ter sido iniciada
-  <b>Açao:</b> Atualiza status e notifica (Observer)
+  <b>Ação:</b> Atualiza status e notifica (Observer)
 end note
 
 EmAndamento : entry / registrarHoraInicio()
 EmAndamento : do / monitorarTrajeto()
 
-EmAndamento --> Finalizada : finalizar()
+EmAndamento --> Finalizada : finalizar() 
 note on link
-  atividade no estado Em Andamento pra monitorar o trajeto
+  <b>Evento:</b> Motorista clica em 'Finalizar Rota'
+  <b>Ação:</b> Encerra a atividade monitorarTrajeto()
 end note
+
+Finalizada : entry / registrarHoraFim()
+
 Finalizada --> [*]
 @enduml

@@ -16,7 +16,7 @@ Pendente : do / aguardarDecisao()
 Pendente --> Aprovada : aprovar() / notificarAluno(APROVADA)
 note on link
   <b>Evento:</b> Motorista aprova a troca
-  <b>Ação:</b> notificar aluno e atyalizar ponto
+  <b>Ação:</b> notificar aluno e atualizar ponto
 end note
 
 Pendente --> Rejeitada : rejeitar(motivo) / notificarAluno(REJEITADA)
